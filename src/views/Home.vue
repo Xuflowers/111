@@ -1,0 +1,144 @@
+<template>
+  <div class="home">
+    <!-- 顶部搜索栏 -->
+    <van-search
+        v-model="searchText"
+        placeholder="请输入搜索关键词"
+        @search="onSearch"
+        shape="round"
+        class="search-bar"
+    />
+
+    <!-- 轮播图 -->
+    <van-swipe class="banner" :autoplay="3000" indicator-color="white">
+      <van-swipe-item v-for="(image, index) in bannerImages" :key="index">
+        <img :src="image" alt="Banner Image" style="width: 100%; height: 150px; object-fit: cover;" />
+      </van-swipe-item>
+    </van-swipe>
+
+    <!-- 功能按钮区 (宫格) -->
+    <van-grid clickable :border="false" column-num="4" class="func-grid">
+      <van-grid-item icon="photo-o" text="生鲜" @click="goToCategory(0)" />
+      <van-grid-item icon="photo-o" text="零食" @click="goToCategory(1)" />
+      <van-grid-item icon="photo-o" text="百货" @click="goToCategory(2)" />
+      <van-grid-item icon="photo-o" text="酒水" @click="goToCategory(3)" />
+    </van-grid>
+
+    <!-- 商品信息展示区 -->
+    <div class="product-list">
+      <h3>热销商品</h3>
+      <van-card
+          v-for="item in hotProducts"
+          :key="item.id"
+          :num="item.sales"
+          :price="(item.price / 100).toFixed(2)"
+          :desc="item.desc"
+          :title="item.name"
+          :thumb="item.image"
+          @click="goToDetail(item.id)"
+      >
+        <template #tags>
+          <van-tag plain type="danger" v-if="item.tag">热销</van-tag>
+        </template>
+        <template #footer>
+          <van-button size="mini" type="warning" @click.stop="addToCart(item)">加入购物车</van-button>
+        </template>
+      </van-card>
+    </div>
+
+    <!-- 底部导航 -->
+    <AppTabBar />
+  </div>
+</template>
+
+<script>
+import { ref } from 'vue'
+import { useRouter } from 'vue-router'
+import { useStore } from 'vuex'
+import { Toast } from 'vant'
+import AppTabBar from '../components/AppTabBar.vue'
+
+export default {
+  name: 'HomeView',
+  components: { AppTabBar },
+  setup() {
+    const store = useStore()
+    const router = useRouter()
+    const searchText = ref('')
+
+    const bannerImages = [
+      'https://img.yzcdn.cn/vant/apple-1.jpg',
+      'https://img.yzcdn.cn/vant/apple-2.jpg'
+    ]
+
+    // 修正：价格统一使用“分”为单位（与商品详情页、购物车保持一致）
+    const hotProducts = [
+      { id: 1, name: '进口牛油果', price: 2990, sales: 1200, desc: '新鲜采摘', image: 'https://img.yzcdn.cn/vant/apple-1.jpg', tag: true },
+      { id: 2, name: '泰国金枕榴莲', price: 5990, sales: 800, desc: '果肉饱满', image: 'https://img.yzcdn.cn/vant/apple-2.jpg', tag: true },
+      { id: 3, name: '澳洲进口牛奶', price: 1290, sales: 2000, desc: '营养丰富', image: 'https://img.yzcdn.cn/vant/apple-1.jpg', tag: false }
+    ]
+
+    const onSearch = (val) => {
+      if (val && val.trim()) {
+        router.push(`/search?keyword=${encodeURIComponent(val.trim())}`)
+      } else {
+        Toast('请输入搜索关键词')
+      }
+    }
+
+    const goToCategory = (index) => {
+      router.push(`/category?index=${index}`)
+    }
+
+    const goToDetail = (id) => {
+      router.push(`/product/${id}`)
+    }
+
+    const addToCart = (product) => {
+      // 注意：product 的 price 已经是“分”，直接传入即可
+      store.dispatch('addToCart', {
+        id: product.id,
+        name: product.name,
+        price: product.price,
+        image: product.image,
+        count: 1
+      })
+      Toast.success('已加入购物车')
+    }
+
+    return {
+      searchText,
+      bannerImages,
+      hotProducts,
+      onSearch,
+      goToCategory,
+      goToDetail,
+      addToCart
+    }
+  }
+}
+</script>
+
+<style scoped>
+.search-bar {
+  padding: 10px;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background-color: white;
+}
+.banner img {
+  width: 100%;
+  height: 150px;
+  object-fit: cover;
+}
+.func-grid {
+  margin: 10px 0;
+}
+.product-list h3 {
+  padding-left: 16px;
+  font-weight: bold;
+  margin-top: 16px;
+  margin-bottom: 8px;
+}
+</style>
