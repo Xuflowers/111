@@ -2,12 +2,16 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
+    <!-- 移动端适配：禁止用户缩放，保证页面在手机端按设计稿显示 -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>111</title>
   </head>
   <body>
+    <!-- Vue 应用挂载点 -->
     <div id="app"></div>
+    <!-- 以 ES Module 方式加载应用入口 -->
     <script type="module" src="/src/main.js"></script>
   </body>
 </html>

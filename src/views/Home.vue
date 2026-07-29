@@ -52,6 +52,7 @@
 </template>
 
 <script>
+// 首页：包含搜索栏、轮播图、分类入口、热销商品列表
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useStore } from 'vuex'
@@ -66,6 +67,7 @@ export default {
     const router = useRouter()
     const searchText = ref('')
 
+    // 轮播图图片地址
     const bannerImages = [
       'https://img.yzcdn.cn/vant/apple-1.jpg',
       'https://img.yzcdn.cn/vant/apple-2.jpg'
@@ -78,6 +80,7 @@ export default {
       { id: 3, name: '澳洲进口牛奶', price: 1290, sales: 2000, desc: '营养丰富', image: 'https://img.yzcdn.cn/vant/apple-1.jpg', tag: false }
     ]
 
+    // 搜索：跳转到搜索结果页并携带关键词
     const onSearch = (val) => {
       if (val && val.trim()) {
         router.push(`/search?keyword=${encodeURIComponent(val.trim())}`)
@@ -86,14 +89,17 @@ export default {
       }
     }
 
+    // 跳转到对应分类页（携带分类索引）
     const goToCategory = (index) => {
       router.push(`/category?index=${index}`)
     }
 
+    // 跳转到商品详情页
     const goToDetail = (id) => {
       router.push(`/product/${id}`)
     }
 
+    // 加入购物车
     const addToCart = (product) => {
       // 注意：product 的 price 已经是“分”，直接传入即可
       store.dispatch('addToCart', {
@@ -120,6 +126,11 @@ export default {
 </script>
 
 <style scoped>
+.home {
+  min-height: 100vh;
+  background-color: #f7f8fa;
+  padding-bottom: 50px;
+}
 .search-bar {
   padding: 10px;
   position: sticky;

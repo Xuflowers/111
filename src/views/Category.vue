@@ -34,7 +34,7 @@
               <van-button
                   size="mini"
                   type="warning"
-                  @click.stop="$store.dispatch('addToCart', item)"
+                  @click.stop="handleAddToCart(item)"
               >
                 加入购物车
               </van-button>
@@ -49,14 +49,24 @@
 </template>
 
 <script setup>
+// 商品分类页：左侧分类菜单 + 右侧商品列表，支持点击菜单滚动定位、滚动同步高亮
 import { ref, onMounted, nextTick } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import { useStore } from 'vuex'
+import { Toast } from 'vant'
 import AppTabBar from '@/components/AppTabBar.vue'
 
 const route = useRoute()
 const router = useRouter()
-const activeKey = ref(0)
-const mainContent = ref(null)
+const store = useStore()
+const activeKey = ref(0)            // 当前激活的分类索引
+const mainContent = ref(null)       // 右侧内容容器的 ref，用于滚动控制
+
+// 加入购物车
+const handleAddToCart = (item) => {
+  store.dispatch('addToCart', item)
+  Toast.success('已加入购物车')
+}
 
 // ---------- 分类数据（生鲜、零食、百货、酒水）----------
 const categories = [

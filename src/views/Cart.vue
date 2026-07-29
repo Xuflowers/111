@@ -1,22 +1,17 @@
 <template>
   <div class="cart-page">
-    <!-- 顶部导航栏 -->
     <van-nav-bar title="购物车" />
 
-    <!-- 购物车为空时的展示 -->
     <van-empty v-if="cartItems.length === 0" description="购物车空空如也" />
 
-    <!-- 购物车有商品时的展示 -->
     <div v-else class="cart-list">
       <div v-for="item in cartItems" :key="item.id" class="cart-item">
-        <!-- 勾选框 -->
         <van-checkbox
             :model-value="item.checked"
             @click="toggleCheck(item.id)"
             icon-size="20px"
         />
 
-        <!-- 商品卡片 -->
         <van-card
             :num="item.count"
             :price="(item.price / 100).toFixed(2)"
@@ -49,9 +44,7 @@
       </div>
     </div>
 
-    <!-- 底部结算栏 (修改点：添加 class="cart-submit-bar") -->
     <van-submit-bar
-        class="cart-submit-bar"
         :price="totalPrice"
         :disabled="checkedCount === 0"
         :button-text="`去结算(${checkedCount})`"
@@ -60,7 +53,6 @@
       <van-checkbox :model-value="allChecked" @click="toggleAll">全选</van-checkbox>
     </van-submit-bar>
 
-    <!-- 底部导航 (保持在最底部，无需额外 class) -->
     <AppTabBar />
   </div>
 </template>
@@ -68,10 +60,12 @@
 <script setup>
 import { computed } from 'vue'
 import { useStore } from 'vuex'
-import { Dialog } from 'vant'
+import { useRouter } from 'vue-router'
+import { Dialog, Toast } from 'vant'
 import AppTabBar from '@/components/AppTabBar.vue'
 
 const store = useStore()
+const router = useRouter()
 
 const cartItems = computed(() => store.getters.cartItems)
 const totalPrice = computed(() => store.getters.totalPrice)
@@ -86,8 +80,7 @@ const toggleCheck = (id) => {
 }
 
 const toggleAll = () => {
-  const newVal = !allChecked.value
-  store.commit('CHECK_ALL', newVal)
+  store.commit('CHECK_ALL', !allChecked.value)
 }
 
 const onChange = (item) => {
@@ -103,12 +96,14 @@ const handleDelete = (id) => {
   }).catch(() => {})
 }
 
-// Cart.vue 中修改 onSubmit 方法
 const onSubmit = async () => {
-  if (checkedCount.value === 0) return
+  if (checkedCount.value === 0) {
+    Toast('请选择要结算的商品')
+    return
+  }
   try {
     await store.dispatch('createOrder', { remark: '来自购物车的订单' })
-    // 跳转到订单页面，并默认选中“待付款”标签页
+    Toast.success('订单创建成功')
     router.push('/orders?status=pending-payment')
   } catch (error) {
     Toast(error.message)
@@ -118,7 +113,6 @@ const onSubmit = async () => {
 
 <style scoped>
 .cart-page {
-  /* 页面内容底部留出足够的空隙，防止被两个底部栏遮挡 */
   padding-bottom: 110px;
   background-color: #f7f8fa;
   min-height: 100vh;
@@ -136,24 +130,10 @@ const onSubmit = async () => {
 .cart-card {
   flex: 1;
   margin-left: 10px;
-  margin: 0;
 }
 
-/* --- 核心修改开始 --- */
-
-/* 1. 结算栏悬浮在导航栏上方 */
-:deep(.cart-submit-bar) {
-  bottom: 50px !important; /* 假设底部导航栏高度为 50px */
-  z-index: 100; /* 确保层级在页面内容之上 */
+:deep(.van-submit-bar) {
+  bottom: 50px !important;
+  z-index: 100;
 }
-
-/* 2. 确保底部导航栏在最底部 (如果 AppTabBar 默认不是 bottom:0，可以用这个强制修正) */
-:deep(.app-tab-bar),
-:deep(nav),
-:deep(.tabbar) {
-  bottom: 0 !important;
-  z-index: 99;
-}
-
-/* --- 核心修改结束 --- */
 </style>

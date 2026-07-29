@@ -64,13 +64,15 @@
 </template>
 
 <script setup>
+// 个人中心页：展示用户信息、订单入口、收货地址/帮助等常用功能
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import AppTabBar from "@/components/AppTabBar.vue";
 
 const router = useRouter()
-const userInfo = ref(null)
+const userInfo = ref(null)   // 当前登录用户信息（未登录时为 null）
 
+// 挂载时从 localStorage 读取用户信息
 onMounted(() => {
   const storedUser = localStorage.getItem('user-info')
   if (storedUser) {
@@ -78,10 +80,12 @@ onMounted(() => {
   }
 })
 
+// 跳转到登录页
 const goToLogin = () => {
   router.push('/login')
 }
 
+// 退出登录：清除本地存储并重置用户信息
 const handleLogout = () => {
   if (confirm('确定要退出登录吗？')) {
     localStorage.removeItem('user-token')
@@ -108,6 +112,7 @@ const goToOrdersWithStatus = (status) => {
     router.push('/login')
     return
   }
+  // 将内部状态名转换为 URL query 参数格式
   let queryStatus = ''
   if (status === 'pending_payment') queryStatus = 'pending-payment'
   else if (status === 'pending_receipt') queryStatus = 'pending-receipt'
@@ -116,6 +121,7 @@ const goToOrdersWithStatus = (status) => {
   router.push(`/orders?status=${queryStatus}`)
 }
 
+// 跳转到收货地址页
 const goToAddress = () => {
   if (!userInfo.value) {
     alert('请先登录！')
@@ -125,6 +131,7 @@ const goToAddress = () => {
   router.push('/address')
 }
 
+// 跳转到帮助/客服页
 const goToHelp = () => {
   if (!userInfo.value) {
     alert('请先登录！')

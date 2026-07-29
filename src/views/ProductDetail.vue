@@ -54,10 +54,9 @@
       </div>
     </div>
 
-    <!-- 底部操作栏（Vant 4 写法，若使用 Vant 2 请改为 van-goods-action） -->
     <van-action-bar>
       <van-action-bar-icon icon="chat-o" text="客服" @click="onContact" />
-      <van-action-bar-icon icon="cart-o" text="购物车" @click="$router.push('/cart')" :badge="cartBadge" />
+      <van-action-bar-icon icon="cart-o" text="购物车" @click="$router.push('/cart')" :badge="store.getters.totalNum>0?store.getters.totalNum:null" />
       <van-action-bar-button type="warning" text="加入购物车" @click="addToCart" />
       <van-action-bar-button type="danger" text="立即购买" @click="onBuy" />
     </van-action-bar>
@@ -65,6 +64,7 @@
 </template>
 
 <script setup>
+// 商品详情页：展示轮播图、价格、参数、详情图，提供加入购物车 / 立即购买入口
 import { ref, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useStore } from 'vuex'
@@ -345,16 +345,17 @@ const product = computed(() => {
   return allProducts[id] || allProducts[101] // 默认显示牛油果
 })
 
-// 购物车徽标数量
-const cartBadge = computed(() => {
-  const state = store.state
-  const item = state.cartList[product.value.id]
-  return item ? item.count : 0
-})
-
+// 客服按钮：占位提示
 const onContact = () => Toast('客服功能暂未接入')
-const onBuy = () => Toast('即将跳转支付')
+// 立即购买：模拟支付流程，1.5s 后跳转购物车
+const onBuy = () =>{
+  Toast('即将跳转支付')
+      setTimeout(()=>{
+        router.push('/cart')
+      },1500)
+}
 
+// 加入购物车
 const addToCart = () => {
   store.dispatch('addToCart', {
     id: product.value.id,
@@ -365,6 +366,7 @@ const addToCart = () => {
   Toast.success('已加入购物车')
 }
 
+// 挂载时校验商品 ID，缺失则回到分类页
 onMounted(() => {
   if (!route.params.id) {
     Toast.fail('商品ID缺失')
@@ -374,7 +376,6 @@ onMounted(() => {
 </script>
 
 <style scoped>
-/* 样式保持与之前一致，可复用 */
 .product-detail {
   padding-top: 46px;
   background-color: #f7f8fa;

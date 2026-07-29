@@ -37,6 +37,7 @@
 </template>
 
 <script setup>
+// 消息中心页：展示消息列表（店铺客服、群消息、订阅号、物流助手等）
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import AppTabBar from '@/components/AppTabBar.vue'

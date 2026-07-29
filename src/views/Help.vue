@@ -1,4 +1,5 @@
 <template>
+  <!-- 帮助/客服页：静态入口列表（客服、常见问题、意见反馈、关于我们） -->
   <div class="page">
     <van-nav-bar title="我的帮助" left-arrow @click-left="goBack" />
     <van-cell-group inset style="margin-top: 10px;">
@@ -11,6 +12,7 @@
 </template>
 
 <script setup>
+// 帮助页：仅展示入口，未实现具体跳转逻辑
 import { useRouter } from 'vue-router'
 const router = useRouter()
 const goBack = () => router.go(-1)

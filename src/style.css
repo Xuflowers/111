@@ -1,3 +1,11 @@
+/* ============================================================
+ * 全局样式表（含设计变量、暗色主题、基础元素与首屏布局）
+ * 说明：本文件大部分为 Vite 脚手架默认模板样式，业务样式多在
+ *       各组件 <style scoped> 中维护，这里主要提供主题变量与
+ *       全局基础样式。
+ * ============================================================ */
+
+/* 设计变量（浅色主题） */
 :root {
   --text: #6b6375;
   --text-h: #08060d;
@@ -11,10 +19,12 @@
   --shadow:
     rgba(0, 0, 0, 0.1) 0 10px 15px -3px, rgba(0, 0, 0, 0.05) 0 4px 6px -2px;
 
+  /* 字体族 */
   --sans: system-ui, 'Segoe UI', Roboto, sans-serif;
   --heading: system-ui, 'Segoe UI', Roboto, sans-serif;
   --mono: ui-monospace, Consolas, monospace;
 
+  /* 全局字号 / 行高 / 字间距 */
   font: 18px/145% var(--sans);
   letter-spacing: 0.18px;
   color-scheme: light dark;
@@ -25,11 +35,13 @@
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 
+  /* 平板及以下尺寸缩小字号 */
   @media (max-width: 1024px) {
     font-size: 16px;
   }
 }
 
+/* 暗色主题：跟随系统偏好自动切换 */
 @media (prefers-color-scheme: dark) {
   :root {
     --text: #9ca3af;
@@ -45,6 +57,7 @@
       rgba(0, 0, 0, 0.4) 0 10px 15px -3px, rgba(0, 0, 0, 0.25) 0 4px 6px -2px;
   }
 
+  /* 暗色模式下反转社交按钮图标颜色 */
   #social .button-icon {
     filter: invert(1) brightness(2);
   }
@@ -52,9 +65,9 @@
 
 body {
   margin: 0;
-  background: #fff;
 }
 
+/* 标题样式 */
 h1,
 h2 {
   font-family: var(--heading);
@@ -84,6 +97,7 @@ p {
   margin: 0;
 }
 
+/* 行内代码 / 计数器基础样式 */
 code,
 .counter {
   font-family: var(--mono);
@@ -99,6 +113,7 @@ code {
   background: var(--code-bg);
 }
 
+/* 计数器组件：带边框过渡与聚焦轮廓 */
 .counter {
   font-size: 16px;
   padding: 5px 10px;
@@ -118,6 +133,7 @@ code {
   }
 }
 
+/* 首屏 hero 区域：将框架与 Vite logo 进行 3D 透视叠加 */
 .hero {
   position: relative;
 
@@ -157,8 +173,10 @@ code {
   }
 }
 
+/* 应用主容器：宽度限制并居中 */
 #app {
-  width: 100%;
+  width: 1126px;
+  max-width: 100%;
   margin: 0 auto;
   text-align: center;
   border-inline: 1px solid var(--border);
@@ -168,6 +186,7 @@ code {
   box-sizing: border-box;
 }
 
+/* 中心内容区：垂直水平居中布局 */
 #center {
   display: flex;
   flex-direction: column;
@@ -182,6 +201,7 @@ code {
   }
 }
 
+/* "下一步"引导区域：左右两栏，移动端切换为上下排列 */
 #next-steps {
   display: flex;
   border-top: 1px solid var(--border);
@@ -207,6 +227,7 @@ code {
   }
 }
 
+/* 文档栏：在宽屏时作为右侧分隔，移动端切换为底部边框 */
 #docs {
   border-right: 1px solid var(--border);
 
@@ -216,6 +237,7 @@ code {
   }
 }
 
+/* 社交链接列表 */
 #next-steps ul {
   list-style: none;
   padding: 0;
@@ -265,6 +287,7 @@ code {
   }
 }
 
+/* 底部空白占位区 */
 #spacer {
   height: 88px;
   border-top: 1px solid var(--border);
@@ -273,6 +296,7 @@ code {
   }
 }
 
+/* 装饰性刻线（左右两端的小三角） */
 .ticks {
   position: relative;
   width: 100%;
@@ -293,4 +317,6 @@ code {
     right: 0;
     border-right-color: var(--border);
   }
+
+.badge
 }

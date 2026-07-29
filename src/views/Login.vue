@@ -5,12 +5,12 @@
     <!-- 登录表单 -->
     <div class="form-group">
       <label>账号</label>
-      <input v-model="form.username" type="text" placeholder="请输入账号（任意字符即可）" />
+      <input v-model="form.username" type="text" placeholder="请输入账号（admin）" />
     </div>
 
     <div class="form-group">
       <label>密码</label>
-      <input v-model="form.password" type="password" placeholder="请输入密码（任意字符即可）" />
+      <input v-model="form.password" type="password" placeholder="请输入密码（123456）" />
     </div>
 
     <!-- 登录按钮 -->
@@ -19,37 +19,36 @@
 </template>
 
 <script setup>
+// 登录页：仅用于演示，账号密码硬编码（admin / 123456）
 import { reactive } from 'vue'
 import { useRouter } from 'vue-router'
 
 const router = useRouter()
-
-// 1. 定义表单数据
+// 1. 定义表单数据（预填默认账号，方便调试）
 const form = reactive({
-  username: '',
-  password: ''
+  username: 'admin',
+  password: '123456'
 })
 
-// 2. 处理登录逻辑
+// 2. 处理登录逻辑：校验通过后将 token 与用户信息写入 localStorage，并跳转到个人中心
 const handleLogin = () => {
+  const validUser = {username: "admin", password: "123456"}
   // 简单验证
   if (!form.username || !form.password) {
-    alert('请输入账号和密码！')
+    alert("请输入账密")
     return
   }
 
-  // 模拟登录成功逻辑
-  // 在实际项目中，这里应该调用 API 接口
-
-  // 3. 保存登录状态到 LocalStorage (用于在其他页面判断是否已登录)
-  localStorage.setItem('user-token', 'fake-token-123')
-  localStorage.setItem('user-info', JSON.stringify({ name: form.username }))
-
-  alert('登录成功！')
-
-  // 4. 跳转回“我的”页面或者上一页
-  router.push('/user')
+  if (form.username === validUser.username && form.password === validUser.password) {
+    localStorage.setItem('user-token', 'fake-token-123')
+    localStorage.setItem('user-info', JSON.stringify({name: form.username}))
+    alert('登录成功！')
+    router.push('/user')
+  } else {
+    alert('账密不匹配')
+  }
 }
+
 </script>
 
 <style scoped>
