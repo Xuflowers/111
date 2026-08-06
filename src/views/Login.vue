@@ -5,50 +5,59 @@
     <!-- 登录表单 -->
     <div class="form-group">
       <label>账号</label>
-      <input v-model="form.username" type="text" placeholder="请输入账号（admin）" />
+      <input v-model="form.username" type="text" placeholder="请输入账号" />
     </div>
 
     <div class="form-group">
       <label>密码</label>
-      <input v-model="form.password" type="password" placeholder="请输入密码（123456）" />
+      <input v-model="form.password" type="password" placeholder="请输入密码" />
     </div>
 
     <!-- 登录按钮 -->
     <button class="login-btn" @click="handleLogin">立即登录</button>
+
+    <div class="register">没有账号？<router-link to="/register">立即注册!</router-link></div>
   </div>
 </template>
 
 <script setup>
-// 登录页：仅用于演示，账号密码硬编码（admin / 123456）
+// 登录页：校验账号密码，登录成功后将 token 与用户信息写入 localStorage
 import { reactive } from 'vue'
 import { useRouter } from 'vue-router'
+import { useStore } from 'vuex'
+import { Toast } from 'vant'
 
 const router = useRouter()
-// 1. 定义表单数据（预填默认账号，方便调试）
+const store = useStore()
+
+// 表单数据
 const form = reactive({
-  username: 'admin',
-  password: '123456'
+  username: '',
+  password: ''
 })
 
-// 2. 处理登录逻辑：校验通过后将 token 与用户信息写入 localStorage，并跳转到个人中心
+// 登录逻辑：校验通过后跳转到个人中心
 const handleLogin = () => {
-  const validUser = {username: "admin", password: "123456"}
-  // 简单验证
   if (!form.username || !form.password) {
-    alert("请输入账密")
+    Toast('请输入账号和密码')
     return
   }
 
-  if (form.username === validUser.username && form.password === validUser.password) {
-    localStorage.setItem('user-token', 'fake-token-123')
-    localStorage.setItem('user-info', JSON.stringify({name: form.username}))
-    alert('登录成功！')
+  // 从 store 的 accountList 中查找用户
+  const user = store.state.accountList.find(
+    u => u.username === form.username && u.password === form.password
+  )
+
+  if (user) {
+    // 登录成功
+    localStorage.setItem('user-token', 'fake-token')
+    localStorage.setItem('user-info', JSON.stringify({ name: user.username }))
+    Toast.success('登录成功')
     router.push('/user')
   } else {
-    alert('账密不匹配')
+    Toast.fail('账号或密码错误')
   }
 }
-
 </script>
 
 <style scoped>
@@ -56,10 +65,11 @@ const handleLogin = () => {
   padding: 20px;
   max-width: 400px;
   margin: 0 auto;
+  margin-top: 180px;
   background: #fff;
   border-radius: 8px;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-  margin-top: 50px;
+
 }
 
 h2 {
@@ -84,7 +94,7 @@ input {
   padding: 10px;
   border: 1px solid #ddd;
   border-radius: 4px;
-  box-sizing: border-box; /* 确保padding不撑大宽度 */
+  box-sizing: border-box;
   font-size: 14px;
 }
 
@@ -107,5 +117,12 @@ input:focus {
 
 .login-btn:active {
   background-color: #06ad56;
+}
+
+.register {
+  margin-left: 56%;
+  color: #333;
+  padding-top: 2%;
+  font-size: 15px;
 }
 </style>

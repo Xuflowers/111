@@ -1,4 +1,4 @@
-、10<template>
+<template>
   <div class="completed-detail">
     <van-nav-bar title="订单详情" left-arrow @click-left="goBack" />
 
@@ -28,7 +28,7 @@
     <van-cell-group inset>
       <van-cell title="下单时间" :value="formatTime(order.createTime)" />
       <van-cell v-if="order.extra?.payTime" title="支付时间" :value="formatTime(order.extra.payTime)" />
-      <van-cell v-if="order.extra?.finishTime" title="完成时间" :value="formatTime(order.extra.finishTime)" />
+      <van-cell v-if="order.extra?.reviewTime" title="评价时间" :value="formatTime(order.extra.reviewTime)" />
       <van-cell title="订单编号" :value="order.id" label="点击复制" @click="copyOrderId" />
     </van-cell-group>
 

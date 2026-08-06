@@ -10,7 +10,7 @@ import {
     CheckboxGroup, Stepper, SubmitBar, Checkbox, Toast, Dialog, Sidebar, SidebarItem,
     Image as VanImage, Cell, CellGroup, NavBar, Icon, Empty, Tabs, Tab, Badge,
     ActionBar, ActionBarIcon, ActionBarButton,
-    AddressList, RadioGroup, Radio, Uploader, Popup, Field, Switch
+    AddressList, RadioGroup, Radio, Uploader, Popup, Field, Switch, CouponList, CouponCell
 } from 'vant'
 
 // 创建 Vue 应用实例
@@ -22,7 +22,8 @@ app.use(Search).use(Swipe).use(SwipeItem).use(Grid).use(GridItem).use(Card).use(
     .use(Checkbox).use(Toast).use(Dialog).use(Sidebar).use(SidebarItem).use(VanImage).use(Cell).use(CellGroup)
     .use(NavBar).use(Icon).use(Empty).use(Tabs).use(Tab).use(Badge)
     .use(ActionBar).use(ActionBarIcon).use(ActionBarButton)
-    .use(AddressList).use(RadioGroup).use(Radio).use(Uploader).use(Popup).use(Field).use(Switch)
+    .use(AddressList).use(RadioGroup).use(Radio).use(Uploader).use(Popup).use(Field).use(Switch).use(CouponList)
+    .use(CouponCell)
 
 // 注册 Vuex 状态管理、Vue Router，并将应用挂载到 #app 节点
 app.use(store).use(router).mount('#app')

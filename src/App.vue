@@ -37,4 +37,20 @@ export default {
   transform: translateX(-50%) !important;
   width: 100% !important;
 }
+
+/* Toast 样式：限制宽度不超出屏幕 */
+.van-toast {
+  max-width: 80vw !important;
+  width: max-content !important;
+  box-sizing: border-box;
+  @media (min-width: 376px) {
+    max-width: 300px !important;
+  }
+}
+
+.van-toast__text {
+  word-break: break-word;
+  white-space: normal;
+  text-align: center;
+}
 </style>

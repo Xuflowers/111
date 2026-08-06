@@ -20,23 +20,55 @@ const saveOrders = (orders) => {
     localStorage.setItem('order-list', JSON.stringify(orders))
 }
 
-//地址信息持久化：从localStorage读取已保存的地址数据
-const loadAddress = ()=>{
+// 地址信息持久化：从 localStorage 读取已保存的地址数据
+const loadAddress = () => {
     const address = localStorage.getItem('address-list')
     return address ? JSON.parse(address) : []
 }
-
-//地址信息持久化：将地址信息写入localStorage
-const saveAddress = (addresses)=>{
+// 地址信息持久化：将地址数据写入 localStorage
+const saveAddress = (addresses) => {
     localStorage.setItem('address-list', JSON.stringify(addresses))
 }
 
-// Vuex 仓库：统一管理购物车、订单、售后记录、地址数据记录
+// 账户信息持久化
+const loadAccount = () => {
+    const account = localStorage.getItem('account-list')
+    return account ? JSON.parse(account) : []
+}
+const saveAccount = (account) => {
+    localStorage.setItem('account-list', JSON.stringify(account))
+}
+
+const STORAGE_KEY_COUPOND='cart_coupons'
+const STORAGE_KEY_CHOSEN = 'cart_chosen_coupon'
+
+const loadCoupons = () =>{
+    const data = localStorage.getItem(STORAGE_KEY_COUPONS)
+    if (data) {
+        try{
+            return JSON.parse(data)
+        }catch {
+            return[defaultCoupon]
+        }
+    }
+    return[defaultCoupon]
+}
+
+const saveCoupons = (list)=>{
+    localStorage.setItem(STORAGE_KEY_COUPOND,JSON.stringify(list))
+}
+
+const saveChosen = (index)=>{
+    localStorage.setItem(STORAGE_KEY_CHOSEN,string(index))
+}
+
+// Vuex 仓库：统一管理购物车、订单、售后记录、地址、账户数据记录
 export default createStore({
     state: {
         cartList: loadCart(),        // 购物车：以商品 id 为键的对象
         orderList: loadOrders(),     // 订单列表：数组，按创建时间倒序
-        addressList: loadAddress(),  // 地址列表：数组，按添加时间倒序
+        addressList: loadAddress(),  // 地址列表：数组
+        accountList: loadAccount(),  // 账户列表：数组
         refundRecords: []            // 售后记录：仅在内存中维护
     },
     mutations: {
@@ -52,7 +84,7 @@ export default createStore({
                     name: product.name,
                     price: product.price,
                     image: product.image,
-                    count: 1,
+                    count: product.count || 1,
                     checked: true
                 }
             }
@@ -91,14 +123,12 @@ export default createStore({
             state.orderList.unshift(order)
             saveOrders(state.orderList)
         },
-        // 更新订单状态：status 为新状态，extra 用于附加字段（如支付时间、售后原因等）
+        // 更新订单状态：status 为新状态，extra 用于附加字段
         UPDATE_ORDER_STATUS(state, { orderId, status, extra = {} }) {
-            const index = state.orderList.findIndex(o => o.id == orderId) // 使用 == 兼容字符串/数字
+            const index = state.orderList.findIndex(o => o.id == orderId)
             if (index !== -1) {
-                // 直接修改订单对象
                 state.orderList[index].status = status
                 Object.assign(state.orderList[index], extra)
-                // 关键：强制触发响应式更新，确保 getters 重新计算
                 state.orderList = [...state.orderList]
                 saveOrders(state.orderList)
             }
@@ -116,31 +146,32 @@ export default createStore({
                 state.refundRecords = [...state.refundRecords]
             }
         },
+
         // ----------------- 地址 mutations -----------------
-        //地址列表替换
-        SET_ADDRERSS_LIST(state,newList){
+        // 地址列表替换
+        SET_ADDRESS_LIST(state, newList) {
             state.addressList = newList
             saveAddress(state.addressList)
         },
-        // 新增地址（插到列表头部，最新地址显示在最前,id自动赋予）
-        ADD_ADDRESS(state, addressData){
+        // 新增地址
+        ADD_ADDRESS(state, addressData) {
             const newId = Date.now().toString()
             const newAddress = {
                 id: newId,
                 ...addressData,
                 isDefault: addressData.isDefault || false
             }
-            if(newAddress.isDefault){
+            if (newAddress.isDefault) {
                 state.addressList.forEach(item => item.isDefault = false)
             }
             state.addressList.push(newAddress)
             saveAddress(state.addressList)
         },
-        //根据ID进行指定地址更新
-        UPDATE_ADDRESS(state,{id,addressData}){
+        // 根据 ID 更新地址
+        UPDATE_ADDRESS(state, { id, addressData }) {
             const index = state.addressList.findIndex(item => item.id === id)
-            if (index !== -1){
-                if (addressData.isDefault){
+            if (index !== -1) {
+                if (addressData.isDefault) {
                     state.addressList.forEach(item => item.isDefault = false)
                 }
                 state.addressList[index] = {
@@ -150,17 +181,29 @@ export default createStore({
                 saveAddress(state.addressList)
             }
         },
-        //根据ID进行过滤删除
-        DELTE_ADDRESS(state,id){
+        // 根据 ID 删除地址
+        DELETE_ADDRESS(state, id) {
             state.addressList = state.addressList.filter(item => item.id !== id)
             saveAddress(state.addressList)
         },
-        //将指定ID设置为默认地址，其余设置为非默认（isDefault设置true,其余false）
-        SET_DEFAULT_ADDRESS(state,id){
-            state.addressList.forEach(item=>{
+        // 设置默认地址
+        SET_DEFAULT_ADDRESS(state, id) {
+            state.addressList.forEach(item => {
                 item.isDefault = item.id === id
             })
             saveAddress(state.addressList)
+        },
+
+        // ----------------- 账户 mutations -----------------
+        ADD_TO_ACCOUNT(state, account) {
+            const exists = state.accountList.some(a => a.username === account.username)
+            if (!exists) {
+                state.accountList.push({
+                    username: account.username,
+                    password: account.password
+                })
+                saveAccount(state.accountList)
+            }
         }
     },
     actions: {
@@ -172,15 +215,13 @@ export default createStore({
         removeFromCart({ commit }, id) {
             commit('REMOVE_FROM_CART', id)
         },
-        // 创建订单：基于购物车中已勾选的商品生成订单，并清空这些商品
-        createOrder({ commit, state }, { remark = '' }) {
+        // 创建订单
+        createOrder({ commit, state }, { remark = '', discount = 0, couponName = '' }) {
             const checkedItems = Object.values(state.cartList).filter(item => item.checked)
             if (checkedItems.length === 0) throw new Error('没有选中任何商品')
-            // 生成订单号：时间戳 + 随机数
             const orderId = Date.now() + '' + Math.floor(Math.random() * 1000)
-            // 计算订单总金额（price 单位为分，需转换为元）
             const totalAmount = checkedItems.reduce((sum, item) => sum + (item.price * item.count) / 100, 0)
-            // 拷贝购物车商品快照到订单中
+            const finalAmount = Math.max(0, totalAmount - discount / 100)
             const orderProducts = checkedItems.map(item => ({
                 id: item.id,
                 name: item.name,
@@ -190,14 +231,16 @@ export default createStore({
             }))
             const newOrder = {
                 id: orderId,
-                status: 'pending_payment',                  // 初始状态：待付款
+                status: 'pending_payment',
                 createTime: new Date().toISOString(),
-                totalAmount: totalAmount.toFixed(2),
+                totalAmount: finalAmount.toFixed(2),
+                originalAmount: totalAmount.toFixed(2),
+                discount: (discount / 100).toFixed(2),
+                couponName,
                 products: orderProducts,
                 remark
             }
             commit('ADD_ORDER', newOrder)
-            // 提交订单后，将已下单的商品从购物车中清除
             for (const item of checkedItems) {
                 commit('REMOVE_FROM_CART', item.id)
             }
@@ -207,7 +250,7 @@ export default createStore({
         updateOrderStatus({ commit }, payload) {
             commit('UPDATE_ORDER_STATUS', payload)
         },
-        // 创建售后记录：生成 refundId 并附带创建时间、初始状态
+        // 创建售后记录
         createRefundRecord({ commit }, record) {
             const refundId = 'R' + Date.now() + Math.floor(Math.random() * 1000)
             commit('CREATE_REFUND_RECORD', {
@@ -229,7 +272,7 @@ export default createStore({
             commit('UPDATE_ADDRESS', payload)
         },
         deleteAddress({ commit }, id) {
-            commit('DELETE_ADDRESS', id)   // 注意 mutation 名称应为 DELETE_ADDRESS
+            commit('DELETE_ADDRESS', id)
         },
         setDefaultAddress({ commit }, id) {
             commit('SET_DEFAULT_ADDRESS', id)
@@ -252,16 +295,16 @@ export default createStore({
             }, 0)
         },
         // 购物车商品总件数（用于底部 Tab 角标）
-        totalNum: (state)=>{
+        totalNum: (state) => {
             return Object.values(state.cartList).reduce((sum, item) => sum + item.count, 0)
         },
         // 全部订单（按创建时间倒序）
         allOrders: (state) => [...state.orderList].sort((a, b) => new Date(b.createTime) - new Date(a.createTime)),
         // 各状态订单筛选
-        pendingPaymentOrders: (state) => state.orderList.filter(o => o.status === 'pending_payment'),  // 待付款
-        pendingReceiptOrders: (state) => state.orderList.filter(o => o.status === 'pending_receipt'),  // 待收货
-        reviewOrders: (state) => state.orderList.filter(o => o.status === 'review'),                    // 待评价
-        refundOrders: (state) => state.orderList.filter(o => o.status === 'refund'),                    // 退款/售后中
+        pendingPaymentOrders: (state) => state.orderList.filter(o => o.status === 'pending_payment'),
+        pendingReceiptOrders: (state) => state.orderList.filter(o => o.status === 'pending_receipt'),
+        reviewOrders: (state) => state.orderList.filter(o => o.status === 'review'),
+        refundOrders: (state) => state.orderList.filter(o => o.status === 'refund'),
         // 售后记录
         refundRecords: (state) => state.refundRecords,
         pendingRefundRecords: (state) => state.refundRecords.filter(r => r.status === 'pending')

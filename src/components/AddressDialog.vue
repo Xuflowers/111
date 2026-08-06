@@ -39,6 +39,7 @@
       <div class="dialog-footer">
         <van-button type="default" block @click="close">取消</van-button>
         <van-button type="primary" block @click="submit" :disabled="!canSubmit">保存地址</van-button>
+        <van-button type="warning" block @click="handleDelete" v-if="address">删除地址</van-button>
       </div>
     </div>
    </div>
@@ -55,16 +56,16 @@ const props = defineProps({
   address: Object       // 当前申请售后的订单对象
 })
 
-const emit = defineEmits(['close','submit'])
+const emit = defineEmits(['close','submit','delete'])
 
 const formData = ref({
-  name:'',
-  tel:"",
-  address:'',
-  isDefault:'false'
+  name: '',
+  tel: '',
+  address: '',
+  isDefault: false
 })
 // 表单字段
-const addressType = ref('return')       // 地址类型类型（是 / 否为默认地址）
+const addressType = ref('no')       // 是否为默认地址（yes/no）
 // 地址类型选项
 const typeOptions = [
   { value: 'yes', label: '是' },
@@ -108,6 +109,16 @@ const submit = () => {
   emit('submit', submitData)
   // 不再手动重置，由父组件关闭弹窗触发 watch 重置
 }
+
+const handleDelete = () =>{
+  if(!props.address||!props.address.id){
+    Toast('地址信息不存在')
+    return
+  }
+  emit('delete',props.address)
+  }
+
+
 </script>
 
 <style scoped>

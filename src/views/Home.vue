@@ -67,17 +67,24 @@ export default {
     const router = useRouter()
     const searchText = ref('')
 
+    // 商品图片映射表
+    const productImages = {
+      101: 'https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=fresh%20avocado%20fruit%20on%20white%20background&image_size=square',
+      102: 'https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=durian%20fruit%20with%20thorn%20shell&image_size=square',
+      201: 'https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=potato%20chips%20snack%20package&image_size=square'
+    }
+
     // 轮播图图片地址
     const bannerImages = [
-      'https://img.yzcdn.cn/vant/apple-1.jpg',
-      'https://img.yzcdn.cn/vant/apple-2.jpg'
+      'https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=grocery%20shopping%20banner%20fresh%20fruits&image_size=landscape_16_9',
+      'https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=online%20shopping%20promotion%20sale&image_size=landscape_16_9'
     ]
 
-    // 修正：价格统一使用“分”为单位（与商品详情页、购物车保持一致）
+    // 修正：商品 ID 与 ProductDetail 页 allProducts 键保持一致
     const hotProducts = [
-      { id: 1, name: '进口牛油果', price: 2990, sales: 1200, desc: '新鲜采摘', image: 'https://img.yzcdn.cn/vant/apple-1.jpg', tag: true },
-      { id: 2, name: '泰国金枕榴莲', price: 5990, sales: 800, desc: '果肉饱满', image: 'https://img.yzcdn.cn/vant/apple-2.jpg', tag: true },
-      { id: 3, name: '澳洲进口牛奶', price: 1290, sales: 2000, desc: '营养丰富', image: 'https://img.yzcdn.cn/vant/apple-1.jpg', tag: false }
+      { id: 101, name: '进口牛油果', price: 2990, sales: 1200, desc: '新鲜采摘', image: productImages[101], tag: true },
+      { id: 102, name: '泰国金枕榴莲', price: 5990, sales: 800, desc: '果肉饱满', image: productImages[102], tag: true },
+      { id: 201, name: '乐事薯片', price: 890, sales: 2000, desc: '薄脆香酥', image: productImages[201], tag: false }
     ]
 
     // 搜索：跳转到搜索结果页并携带关键词

@@ -43,25 +43,42 @@
         </van-card>
       </div>
     </div>
-
     <van-submit-bar
-        :price="totalPrice"
+        :price="finalPrice"
         :disabled="checkedCount === 0"
         :button-text="`去结算(${checkedCount})`"
         @submit="onSubmit"
     >
+      <span v-if="discountPrice > 0" class="discount-tip">已优惠 ¥{{ (discountPrice / 100).toFixed(2) }}</span>
+      <van-coupon-cell
+          :coupons="coupons"
+          :chosen-coupon="chosenCoupon"
+          @click="showList = true"
+      />
       <van-checkbox :model-value="allChecked" @click="toggleAll">全选</van-checkbox>
     </van-submit-bar>
-
+    <van-popup
+        v-model:show="showList"
+        round
+        position="bottom"
+        style="height: 60%;
+          padding-top: 4px;">
+      <van-coupon-list
+          :coupons="coupons"
+          :chosen-coupon="chosenCoupon"
+          :disabled-coupons="disabledCoupons"
+          @change="onCouponChange"
+          @exchange="onExchange"/>
+    </van-popup>
     <AppTabBar />
   </div>
 </template>
 
 <script setup>
-import { computed } from 'vue'
+import { computed, ref, watch, onMounted} from 'vue'
 import { useStore } from 'vuex'
 import { useRouter } from 'vue-router'
-import { Dialog, Toast } from 'vant'
+import { Dialog, Toast, CouponCell, CouponList} from 'vant'
 import AppTabBar from '@/components/AppTabBar.vue'
 
 const store = useStore()
@@ -96,19 +113,165 @@ const handleDelete = (id) => {
   }).catch(() => {})
 }
 
-const onSubmit = async () => {
-  if (checkedCount.value === 0) {
-    Toast('请选择要结算的商品')
-    return
-  }
-  try {
-    await store.dispatch('createOrder', { remark: '来自购物车的订单' })
-    Toast.success('订单创建成功')
-    router.push('/orders?status=pending-payment')
-  } catch (error) {
-    Toast(error.message)
-  }
-}
+    // ---------- 优惠券基础数据 ----------
+    // 默认优惠券模板
+    const defaultCoupon = {
+      available: 1,
+      threshold: 0,
+      condition: '无门槛\n最多优惠120元',
+      reason: '',
+      value: 1500,
+      name: '优惠劵',
+      startAt: Math.floor(Date.now() / 1000),
+      endAt: Math.floor(Date.now() / 1000) + 86400 * 30,
+      valueDesc: '15.0',
+      unitDesc: '元'
+    };
+
+    // ---------- 优惠券持久化 ----------
+    // 从 localStorage 读取已选优惠券索引
+    const loadChosenCoupon = () => {
+      const stored = localStorage.getItem('chosen-coupon')
+      return stored !== null ? parseInt(stored, 10) : -1
+    }
+    // 保存已选优惠券索引到 localStorage
+    const saveChosenCoupon = (index) => {
+      localStorage.setItem('chosen-coupon', index.toString())
+    }
+    // 从 localStorage 读取优惠券列表
+    const loadCoupons = () => {
+      const stored = localStorage.getItem('coupon-list')
+      if (stored) {
+        try {
+          return JSON.parse(stored)
+        } catch (e) {
+          return [defaultCoupon]
+        }
+      }
+      return [defaultCoupon]
+    }
+
+    const coupons = ref(loadCoupons())
+    const disabledCoupons = ref([])
+    const showList = ref(false)
+    const chosenCoupon = ref(loadChosenCoupon())
+
+    // 根据当前购物车金额自动分类优惠券到可用/不可用列表
+    const classifyCoupons = () => {
+      const availableList = []
+      const disabledList = []
+
+      // 记录当前选中券的名称（用于分类后找回索引）
+      const currentSelected = chosenCoupon.value >= 0 ? coupons.value[chosenCoupon.value] : null
+      const selectedName = currentSelected?.name || null
+
+      // 合并所有优惠券进行判断
+      const allCoupons = [...coupons.value, ...disabledCoupons.value]
+
+      allCoupons.forEach(c => {
+        if (totalPrice.value >= c.threshold) {
+          availableList.push({ ...c, available: 1, reason: '' })
+        } else {
+          // 差额 = 门槛 - 当前已选金额
+          const diff = (c.threshold - totalPrice.value) / 100
+          disabledList.push({
+            ...c,
+            available: 0,
+            reason: `还差¥${diff.toFixed(2)}可用`
+          })
+        }
+      })
+
+      coupons.value = availableList
+      disabledCoupons.value = disabledList
+
+      // 根据名称找回选中券的新索引
+      if (selectedName) {
+        const newIndex = availableList.findIndex(c => c.name === selectedName)
+        if (newIndex !== -1) {
+          chosenCoupon.value = newIndex
+        } else {
+          // 券变为不可用或不存在，清除选中
+          chosenCoupon.value = -1
+          saveChosenCoupon(-1)
+        }
+      } else if (chosenCoupon.value >= 0) {
+        // 索引越界（如刷新后券数量变化），清除选中
+        chosenCoupon.value = -1
+        saveChosenCoupon(-1)
+      }
+    }
+
+    const onCouponChange = (index) => {
+      chosenCoupon.value = index;
+      saveChosenCoupon(index);
+      showList.value = false;
+    };
+
+    // 当前选中的优惠券对象
+    const selectedCoupon = computed(() => {
+      return chosenCoupon.value >= 0 ? coupons.value[chosenCoupon.value] : null
+    })
+    // 优惠金额
+    const discountPrice = computed(() => {
+      if (!selectedCoupon.value) return 0
+      return Math.min(selectedCoupon.value.value, totalPrice.value)
+    })
+    // 实付金额 = 原价 - 优惠（最低为 0）
+    const finalPrice = computed(() => Math.max(0, totalPrice.value - discountPrice.value))
+
+    // 监听购物车商品变化，自动重新分类优惠券
+    watch(totalPrice, () => {
+      classifyCoupons()
+    })
+
+    // 监听优惠券列表变化，自动保存到 localStorage
+    watch(coupons, () => {
+      localStorage.setItem('coupon-list', JSON.stringify(coupons.value))
+    }, { deep: true })
+
+    // 组件挂载时初始化分类（确保刷新后选中状态正确）
+    onMounted(() => {
+      classifyCoupons()
+    })
+
+    const onExchange = (code) => {
+      // 兑换一张有门槛的优惠券（满500分可用）
+      const newCoupon = {
+        available: 1,
+        threshold: 50000,  // 满500元可用
+        condition: '满500元可用\n最多优惠200元',
+        reason: '',
+        value: 20000,
+        name: '兑换券',
+        startAt: Math.floor(Date.now() / 1000),
+        endAt: Math.floor(Date.now() / 1000) + 86400 * 30,
+        valueDesc: '200.0',
+        unitDesc: '元'
+      }
+      coupons.value.push(newCoupon)
+      // 兑换后立即根据当前金额分类
+      classifyCoupons()
+      Toast.success('兑换成功')
+    }
+
+    const onSubmit = async () => {
+      if (checkedCount.value === 0) {
+        Toast('请选择要结算的商品')
+        return
+      }
+      try {
+        await store.dispatch('createOrder', {
+          remark: '来自购物车的订单',
+          discount: discountPrice.value,
+          couponName: selectedCoupon.value?.name || ''
+        })
+        Toast.success('订单创建成功')
+        router.push('/orders?status=pending-payment')
+      } catch (error) {
+        Toast(error.message)
+      }
+    }
 </script>
 
 <style scoped>
@@ -135,5 +298,17 @@ const onSubmit = async () => {
 :deep(.van-submit-bar) {
   bottom: 50px !important;
   z-index: 100;
+}
+
+:deep(.van-submit-bar__bar) {
+  min-height: 110px;
+  flex-wrap: wrap !important;
+}
+
+.discount-tip {
+  color: #ee0a24;
+  font-size: 12px;
+  width: 100%;
+  padding: 4px 16px 0;
 }
 </style>

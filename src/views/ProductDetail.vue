@@ -74,6 +74,66 @@ const route = useRoute()
 const router = useRouter()
 const store = useStore()
 
+// ---------- 商品图片映射表（使用 text_to_image API，保证图片与商品名称对应）----------
+const productImages = {
+  101: [
+    'https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=fresh%20avocado%20fruit%20on%20white%20background&image_size=square',
+    'https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=avocado%20half%20cut%20green%20fresh&image_size=square'
+  ],
+  102: [
+    'https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=durian%20fruit%20with%20thorn%20shell&image_size=square',
+    'https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=durian%20cut%20open%20yellow%20flesh&image_size=square'
+  ],
+  103: [
+    'https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=red%20cherries%20with%20green%20stem&image_size=square',
+    'https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=cherry%20berries%20in%20wooden%20bowl&image_size=square'
+  ],
+  104: [
+    'https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=fresh%20blueberries%20in%20white%20bowl&image_size=square',
+    'https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=blueberry%20berries%20close%20up&image_size=square'
+  ],
+  201: [
+    'https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=potato%20chips%20snack%20package&image_size=square',
+    'https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=potato%20chips%20crispy%20snack&image_size=square'
+  ],
+  202: [
+    'https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=chocolate%20bar%20dove%20brand&image_size=square',
+    'https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=milk%20chocolate%20sweet%20dessert&image_size=square'
+  ],
+  203: [
+    'https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=mixed%20nuts%20in%20gift%20box&image_size=square',
+    'https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=walnuts%20almonds%20nuts%20snack&image_size=square'
+  ],
+  301: [
+    'https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=paper%20tissues%20box%20product&image_size=square',
+    'https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=soft%20tissue%20paper%20pack&image_size=square'
+  ],
+  302: [
+    'https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=laundry%20detergent%20bottle&image_size=square',
+    'https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=blue%20liquid%20detergent%20container&image_size=square'
+  ],
+  303: [
+    'https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=plastic%20storage%20box%20with%20lid&image_size=square',
+    'https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=storage%20organizer%20box%20stackable&image_size=square'
+  ],
+  401: [
+    'https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=beer%20bottle%20tsingtao%20brand&image_size=square',
+    'https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=beer%20glass%20cold%20foam&image_size=square'
+  ],
+  402: [
+    'https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=red%20wine%20bottle%20cabernet&image_size=square',
+    'https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=red%20wine%20glass%20pouring&image_size=square'
+  ],
+  403: [
+    'https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=chinese%20white%20liquor%20small%20bottle&image_size=square',
+    'https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=baijiu%20chinese%20liquor%20bottle&image_size=square'
+  ],
+  3: [
+    'https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=red%20apples%20fuji%20fresh%20fruit&image_size=square',
+    'https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=apple%20slice%20red%20juicy&image_size=square'
+  ]
+}
+
 // ---------- 扩展商品数据，适配 Category 模块所有商品 ----------
 const allProducts = {
   // 生鲜类 (ID 101-104)
@@ -86,14 +146,8 @@ const allProducts = {
     origin: '墨西哥',
     guarantees: ['坏单包赔', '极速退款'],
     specs: { 品牌: '牛油果先生', 规格: '6个装' },
-    images: [
-      'https://img.yzcdn.cn/vant/apple-1.jpg',
-      'https://img.yzcdn.cn/vant/apple-2.jpg'
-    ],
-    detailImages: [
-      'https://img.yzcdn.cn/vant/apple-3.jpg',
-      'https://img.yzcdn.cn/vant/apple-4.jpg'
-    ],
+    images: productImages[101],
+    detailImages: productImages[101],
     detailText: '新鲜采摘，富含多种维生素，健康轻食首选。'
   },
   102: {
@@ -105,14 +159,8 @@ const allProducts = {
     origin: '泰国',
     guarantees: ['坏单包赔', '假一赔四', '极速退款'],
     specs: { 品牌: '金枕头', 重量: '2-3kg' },
-    images: [
-      'https://img.yzcdn.cn/vant/apple-2.jpg',
-      'https://img.yzcdn.cn/vant/apple-1.jpg'
-    ],
-    detailImages: [
-      'https://img.yzcdn.cn/vant/apple-2.jpg',
-      'https://img.yzcdn.cn/vant/apple-1.jpg'
-    ],
+    images: productImages[102],
+    detailImages: productImages[102],
     detailText: '果肉饱满，香甜软糯，冷冻后口感更佳。'
   },
   103: {
@@ -124,14 +172,8 @@ const allProducts = {
     origin: '智利',
     guarantees: ['坏单包赔', '假一赔四'],
     specs: { 品牌: '樱桃谷', 规格: 'JJ级 2斤装' },
-    images: [
-      'https://img.yzcdn.cn/vant/apple-3.jpg',
-      'https://img.yzcdn.cn/vant/apple-4.jpg'
-    ],
-    detailImages: [
-      'https://img.yzcdn.cn/vant/apple-3.jpg',
-      'https://img.yzcdn.cn/vant/apple-4.jpg'
-    ],
+    images: productImages[103],
+    detailImages: productImages[103],
     detailText: '颗颗饱满，脆甜多汁，产地直发。'
   },
   104: {
@@ -143,13 +185,8 @@ const allProducts = {
     origin: '秘鲁',
     guarantees: ['坏单包赔', '极速退款'],
     specs: { 品牌: '蓝精灵', 规格: '125g/盒' },
-    images: [
-      'https://img.yzcdn.cn/vant/apple-4.jpg',
-      'https://img.yzcdn.cn/vant/apple-1.jpg'
-    ],
-    detailImages: [
-      'https://img.yzcdn.cn/vant/apple-4.jpg'
-    ],
+    images: productImages[104],
+    detailImages: productImages[104],
     detailText: '花青素丰富，保护视力，酸甜可口。'
   },
   // 零食类 (ID 201-203)
@@ -162,13 +199,8 @@ const allProducts = {
     origin: '中国上海',
     guarantees: ['极速退款'],
     specs: { 品牌: '乐事', 口味: '经典原味', 净含量: '70g' },
-    images: [
-      'https://img.yzcdn.cn/vant/apple-1.jpg',
-      'https://img.yzcdn.cn/vant/apple-2.jpg'
-    ],
-    detailImages: [
-      'https://img.yzcdn.cn/vant/apple-1.jpg'
-    ],
+    images: productImages[201],
+    detailImages: productImages[201],
     detailText: '薄脆香酥，休闲零食必备。'
   },
   202: {
@@ -180,13 +212,8 @@ const allProducts = {
     origin: '中国北京',
     guarantees: ['假一赔四', '极速退款'],
     specs: { 品牌: '德芙', 类型: '牛奶巧克力', 净含量: '43g' },
-    images: [
-      'https://img.yzcdn.cn/vant/apple-2.jpg',
-      'https://img.yzcdn.cn/vant/apple-3.jpg'
-    ],
-    detailImages: [
-      'https://img.yzcdn.cn/vant/apple-2.jpg'
-    ],
+    images: productImages[202],
+    detailImages: productImages[202],
     detailText: '丝滑浓郁，纵享新丝滑。'
   },
   203: {
@@ -198,13 +225,8 @@ const allProducts = {
     origin: '安徽芜湖',
     guarantees: ['坏单包赔', '极速退款'],
     specs: { 品牌: '三只松鼠', 种类: '每日坚果', 净含量: '750g/箱' },
-    images: [
-      'https://img.yzcdn.cn/vant/apple-3.jpg',
-      'https://img.yzcdn.cn/vant/apple-4.jpg'
-    ],
-    detailImages: [
-      'https://img.yzcdn.cn/vant/apple-3.jpg'
-    ],
+    images: productImages[203],
+    detailImages: productImages[203],
     detailText: '混合果仁，科学配比，健康美味。'
   },
   // 百货类 (ID 301-303)
@@ -217,13 +239,8 @@ const allProducts = {
     origin: '广东江门',
     guarantees: ['极速退款'],
     specs: { 品牌: '维达', 规格: '3层100抽*16包' },
-    images: [
-      'https://img.yzcdn.cn/vant/apple-1.jpg',
-      'https://img.yzcdn.cn/vant/apple-2.jpg'
-    ],
-    detailImages: [
-      'https://img.yzcdn.cn/vant/apple-1.jpg'
-    ],
+    images: productImages[301],
+    detailImages: productImages[301],
     detailText: '柔韧不易破，湿水不易烂。'
   },
   302: {
@@ -235,13 +252,8 @@ const allProducts = {
     origin: '广东广州',
     guarantees: ['假一赔四'],
     specs: { 品牌: '蓝月亮', 香型: '自然清香', 容量: '3kg' },
-    images: [
-      'https://img.yzcdn.cn/vant/apple-2.jpg',
-      'https://img.yzcdn.cn/vant/apple-3.jpg'
-    ],
-    detailImages: [
-      'https://img.yzcdn.cn/vant/apple-2.jpg'
-    ],
+    images: productImages[302],
+    detailImages: productImages[302],
     detailText: '深层洁净，低泡易漂。'
   },
   303: {
@@ -253,13 +265,8 @@ const allProducts = {
     origin: '浙江台州',
     guarantees: ['坏单包赔', '极速退款'],
     specs: { 品牌: '空间大师', 尺寸: '45L', 材质: 'PP' },
-    images: [
-      'https://img.yzcdn.cn/vant/apple-3.jpg',
-      'https://img.yzcdn.cn/vant/apple-4.jpg'
-    ],
-    detailImages: [
-      'https://img.yzcdn.cn/vant/apple-3.jpg'
-    ],
+    images: productImages[303],
+    detailImages: productImages[303],
     detailText: '加厚耐用，带滑轮，居家收纳好帮手。'
   },
   // 酒水类 (ID 401-403)
@@ -272,13 +279,8 @@ const allProducts = {
     origin: '山东青岛',
     guarantees: ['极速退款'],
     specs: { 品牌: '青岛', 酒精度: '≥4.0%vol', 容量: '500ml' },
-    images: [
-      'https://img.yzcdn.cn/vant/apple-1.jpg',
-      'https://img.yzcdn.cn/vant/apple-2.jpg'
-    ],
-    detailImages: [
-      'https://img.yzcdn.cn/vant/apple-1.jpg'
-    ],
+    images: productImages[401],
+    detailImages: productImages[401],
     detailText: '麦香浓郁，泡沫细腻，聚会畅饮。'
   },
   402: {
@@ -290,13 +292,8 @@ const allProducts = {
     origin: '河北张家口',
     guarantees: ['假一赔四', '极速退款'],
     specs: { 品牌: '长城', 年份: '2018', 容量: '750ml' },
-    images: [
-      'https://img.yzcdn.cn/vant/apple-2.jpg',
-      'https://img.yzcdn.cn/vant/apple-3.jpg'
-    ],
-    detailImages: [
-      'https://img.yzcdn.cn/vant/apple-2.jpg'
-    ],
+    images: productImages[402],
+    detailImages: productImages[402],
     detailText: '赤霞珠干红，单宁柔和，适合佐餐。'
   },
   403: {
@@ -308,13 +305,8 @@ const allProducts = {
     origin: '重庆',
     guarantees: ['极速退款'],
     specs: { 品牌: '江小白', 酒精度: '40%vol', 容量: '100ml' },
-    images: [
-      'https://img.yzcdn.cn/vant/apple-3.jpg',
-      'https://img.yzcdn.cn/vant/apple-4.jpg'
-    ],
-    detailImages: [
-      'https://img.yzcdn.cn/vant/apple-3.jpg'
-    ],
+    images: productImages[403],
+    detailImages: productImages[403],
     detailText: '单纯高粱酒，表达真我。'
   },
   // 保留原有的苹果商品 (ID 3，兼容可能的历史入口)
@@ -327,14 +319,8 @@ const allProducts = {
     origin: '陕西宝鸡',
     guarantees: ['坏单包赔', '假一赔四', '极速退款'],
     specs: { 品牌: '枝纯', 价格: '100-200' },
-    images: [
-      'https://img.yzcdn.cn/vant/apple-3.jpg',
-      'https://img.yzcdn.cn/vant/apple-4.jpg'
-    ],
-    detailImages: [
-      'https://img.yzcdn.cn/vant/apple-3.jpg',
-      'https://img.yzcdn.cn/vant/apple-4.jpg'
-    ],
+    images: productImages[3],
+    detailImages: productImages[3],
     detailText: '2022季度嘎啦苹果新鲜当季水果整箱陕西甜富士冰糖心脆甜苹果'
   }
 }
@@ -347,12 +333,19 @@ const product = computed(() => {
 
 // 客服按钮：占位提示
 const onContact = () => Toast('客服功能暂未接入')
-// 立即购买：模拟支付流程，1.5s 后跳转购物车
-const onBuy = () =>{
-  Toast('即将跳转支付')
-      setTimeout(()=>{
-        router.push('/cart')
-      },1500)
+// 立即购买：先将商品加入购物车，再跳转到购物车页面
+const onBuy = () => {
+  store.dispatch('addToCart', {
+    id: product.value.id,
+    name: product.value.name,
+    price: product.value.price,
+    image: product.value.images[0],
+    count: 1
+  })
+  Toast.success('已加入购物车，即将跳转')
+  setTimeout(() => {
+    router.push('/cart')
+  }, 1000)
 }
 
 // 加入购物车
