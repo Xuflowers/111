@@ -4,6 +4,9 @@ import { resolve } from 'path'
 
 // Vite 构建配置
 export default defineConfig({
+  // 部署到 GitHub Pages 子路径时必须配置 base，否则静态资源路径错误
+  // 本地开发时 base 为 '/'，生产构建时 base 为 '/111/'
+  base: process.env.NODE_ENV === 'production' ? '/111/' : '/',
   // 插件列表：注册 @vitejs/plugin-vue 以支持 .vue 单文件组件
   plugins: [vue()],
   resolve: {

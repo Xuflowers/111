@@ -1,4 +1,4 @@
-import { createRouter, createWebHistory } from 'vue-router'
+import { createRouter, createWebHashHistory } from 'vue-router'
 import Home from '../views/Home.vue'
 import Category from '../views/Category.vue'
 import Cart from '../views/Cart.vue'
@@ -30,9 +30,10 @@ const routes = [
   { path: "/questionanswer/", component: () => import('../views/QuestionAnswer.vue') },        //常见问题解答
 ]
 
-// 创建路由实例：使用 HTML5 History 模式
+// 创建路由实例：使用 Hash 模式以兼容 GitHub Pages 等静态托管
+// Hash 模式 URL 格式为 /#/path，无需服务器配置即可正常工作
 const router = createRouter({
-  history: createWebHistory(),
+  history: createWebHashHistory(),
   routes
 })
 
