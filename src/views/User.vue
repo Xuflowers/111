@@ -68,6 +68,7 @@
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import AppTabBar from "@/components/AppTabBar.vue";
+import {Toast} from "vant";
 
 const router = useRouter()
 const userInfo = ref(null)   // 当前登录用户信息（未登录时为 null）
@@ -91,14 +92,14 @@ const handleLogout = () => {
     localStorage.removeItem('user-token')
     localStorage.removeItem('user-info')
     userInfo.value = null
-    alert('已退出登录')
+    Toast.success('已退出登录')
   }
 }
 
 // 跳转到订单页面，默认全部（不传 status）
 const goToOrders = () => {
   if (!userInfo.value) {
-    alert('请先登录！')
+    Toast.fail('请先登录！')
     router.push('/login')
     return
   }
