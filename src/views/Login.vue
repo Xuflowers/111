@@ -64,7 +64,7 @@ const handleLogin = () => {
 .login-container {
   position: fixed;
   padding: 20px;
-  min-width: 305px;
+  min-width: 300px;
   margin-left: 15px;
   margin-top: 180px;
   background: #fff;
@@ -121,7 +121,7 @@ input:focus {
 }
 
 .register {
-  margin-left: 54%;
+  margin-left: 52%;
   color: #333;
   padding-top: 2%;
   font-size: 15px;
