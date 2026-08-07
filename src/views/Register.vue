@@ -81,14 +81,16 @@ const handleRegister = () => {
 <style scoped>
 .register-container {
   position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);   /* 完美居中 */
+  width: 90%;                         /* 宽度占屏幕 90%，最大 360px */
+  max-width: 360px;
   padding: 20px;
-  min-width: 300px;
-  margin-left: 15px;
-  margin-top: 180px;
   background: #fff;
   border-radius: 8px;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-
+  box-sizing: border-box;             /* 确保 padding 不撑大宽度 */
 }
 
 h2 {
