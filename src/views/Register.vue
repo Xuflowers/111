@@ -80,10 +80,10 @@ const handleRegister = () => {
 
 <style scoped>
 .register-container {
-  padding: 20px;
   position: fixed;
-  min-width: 335px;
-  margin: 0 auto;
+  padding: 20px;
+  min-width: 305px;
+  margin-left: 15px;
   margin-top: 180px;
   background: #fff;
   border-radius: 8px;
@@ -139,7 +139,7 @@ input:focus {
 }
 
 .login {
-  margin-left: 56%;
+  margin-left: 54%;
   color: #333;
   padding-top: 2%;
   font-size: 15px;

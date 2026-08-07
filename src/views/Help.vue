@@ -11,12 +11,11 @@
     <van-popup
         v-model:show="showFeedBack"
         position="center"
-        :style="{width:'80%'}"
+        class="feedback-popup"
         duration="0.5"
-        round
         closeable
     >
-      <div style="padding: 20px">
+      <div class="feedback">
         <h3>意见反馈</h3>
         <van-field
             v-model="feedbackText"
@@ -34,7 +33,7 @@
         duration="0.5"
         round
         closeable>
-    <div class="main">
+    <div class="AboutUs">
       <div class="title">
         <h2>示例文本</h2>
       </div>
@@ -100,7 +99,7 @@ const showAboutUs =ref(false)
 </script>
 
 <style>
-.main{
+.AboutUs{
   width: 80%;
   margin: 0 auto;
   margin-top: 60px;
@@ -108,5 +107,34 @@ const showAboutUs =ref(false)
   text-align: center;
   background-color: #e5e5e6;
   border-radius: 5%;
+}
+
+/* ---------- 意见反馈弹窗样式 ---------- */
+/* 控制 popup 外层：宽度、圆角、位置 */
+/* 注意：van-popup 会 teleport 到 body，不能加 scoped，否则样式不生效 */
+.feedback-popup {
+  width: 65% !important;             /* 弹窗宽度 */
+  border-radius: 16px !important;    /* 自定义圆角 */
+  overflow: hidden;                  /* 内容不超出圆角 */
+  margin-top: -30%;
+}
+
+/* 控制弹窗内部内容：内边距、标题、按钮间距 */
+.feedback {
+  padding: 20px 20px;
+}
+.feedback h3 {
+  text-align: center;
+  margin-bottom: 16px;
+  font-size: 18px;
+}
+.feedback .van-field__control {
+  background-color: #e5e8ec;
+  border-radius: 16px;
+  padding: 10px;
+}
+.feedback .van-button {
+  margin-top: 12px;
+  border-radius: 8px;
 }
 </style>
