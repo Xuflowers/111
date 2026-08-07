@@ -113,7 +113,7 @@ const showAboutUs =ref(false)
 /* 控制 popup 外层：宽度、圆角、位置 */
 /* 注意：van-popup 会 teleport 到 body，不能加 scoped，否则样式不生效 */
 .feedback-popup {
-  width: 65% !important;             /* 弹窗宽度 */
+  width: 80% !important;             /* 弹窗宽度 */
   border-radius: 16px !important;    /* 自定义圆角 */
   overflow: hidden;                  /* 内容不超出圆角 */
   margin-top: -30%;
