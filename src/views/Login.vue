@@ -123,7 +123,7 @@ input:focus {
 }
 
 .register {
-  margin-left: 50%;
+  margin-left: 48%;
   color: #333;
   padding-top: 2%;
   font-size: 15px;
