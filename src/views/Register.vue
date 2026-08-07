@@ -81,7 +81,8 @@ const handleRegister = () => {
 <style scoped>
 .register-container {
   padding: 20px;
-  max-width: 400px;
+  position: fixed;
+  min-width: 335px;
   margin: 0 auto;
   margin-top: 180px;
   background: #fff;

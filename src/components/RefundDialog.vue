@@ -14,7 +14,7 @@
           <van-cell title="商品信息">
             <template #right-icon>
               <div class="product-preview">
-                <img :src="order.products?.[0]?.image" class="preview-image" />
+                <img :src="getProductImage(order.products?.[0])" class="preview-image" />
                 <span class="preview-name">{{ order.products?.[0]?.name }}</span>
               </div>
             </template>
@@ -100,6 +100,34 @@ const props = defineProps({
 })
 
 const emit = defineEmits(['close', 'submit'])
+
+// ---------- 商品图片映射表 ----------
+const productImageMap = {
+  100: 'https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=fresh%20milk%20carton%20dairy%20product%20white%20background&image_size=square',
+  101: 'https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=fresh%20avocado%20fruit%20on%20white%20background&image_size=square',
+  102: 'https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=durian%20fruit%20with%20thorn%20shell&image_size=square',
+  103: 'https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=red%20cherries%20with%20green%20stem&image_size=square',
+  104: 'https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=fresh%20blueberries%20in%20white%20bowl&image_size=square',
+  201: 'https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=potato%20chips%20snack%20package&image_size=square',
+  202: 'https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=chocolate%20bar%20dove%20brand&image_size=square',
+  203: 'https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=mixed%20nuts%20in%20gift%20box&image_size=square',
+  301: 'https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=paper%20tissues%20box%20product&image_size=square',
+  302: 'https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=laundry%20detergent%20bottle&image_size=square',
+  303: 'https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=plastic%20storage%20box%20with%20lid&image_size=square',
+  401: 'https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=beer%20bottle%20tsingtao%20brand&image_size=square',
+  402: 'https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=red%20wine%20bottle%20cabernet&image_size=square',
+  403: 'https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=chinese%20white%20liquor%20small%20bottle&image_size=square'
+}
+const DEFAULT_IMAGE = 'https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=generic%20product%20placeholder%20white%20background&image_size=square'
+
+// 获取商品图片：优先使用已保存的 image，缺失时按商品 ID 回退
+const getProductImage = (product) => {
+  if (!product) return DEFAULT_IMAGE
+  if (product.image && product.image.startsWith('http')) {
+    return product.image
+  }
+  return productImageMap[product.id] || DEFAULT_IMAGE
+}
 
 // 表单字段
 const refundType = ref('return')       // 售后类型（仅退货 / 退款退货）

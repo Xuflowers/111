@@ -76,6 +76,10 @@ const store = useStore()
 
 // ---------- 商品图片映射表（使用 text_to_image API，保证图片与商品名称对应）----------
 const productImages = {
+  100: [
+    'https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=fresh%20milk%20carton%20dairy%20product%20white%20background&image_size=square',
+    'https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=milk%20box%20australian%20imported%20breakfast&image_size=square'
+  ],
   101: [
     'https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=fresh%20avocado%20fruit%20on%20white%20background&image_size=square',
     'https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=avocado%20half%20cut%20green%20fresh&image_size=square'
@@ -136,7 +140,20 @@ const productImages = {
 
 // ---------- 扩展商品数据，适配 Category 模块所有商品 ----------
 const allProducts = {
-  // 生鲜类 (ID 101-104)
+  // 生鲜类 (ID 100-104)
+  100: {
+    id: 100,
+    name: '澳洲进口牛奶',
+    price: 1290,
+    stock: 100,
+    isNew: false,
+    origin: '澳大利亚',
+    guarantees: ['坏单包赔', '极速退款'],
+    specs: { 品牌: '野哞先生', 规格: '单盒装' },
+    images: productImages[100],
+    detailImages: productImages[100],
+    detailText: '新鲜采集,富含营养物质，孩子健康早餐首选。'
+  },
   101: {
     id: 101,
     name: '进口牛油果',
@@ -309,20 +326,6 @@ const allProducts = {
     detailImages: productImages[403],
     detailText: '单纯高粱酒，表达真我。'
   },
-  // 保留原有的苹果商品 (ID 3，兼容可能的历史入口)
-  3: {
-    id: 3,
-    name: '陕西甜富士冰糖心苹果（约680g/3个）',
-    price: 2680,
-    stock: 19,
-    isNew: true,
-    origin: '陕西宝鸡',
-    guarantees: ['坏单包赔', '假一赔四', '极速退款'],
-    specs: { 品牌: '枝纯', 价格: '100-200' },
-    images: productImages[3],
-    detailImages: productImages[3],
-    detailText: '2022季度嘎啦苹果新鲜当季水果整箱陕西甜富士冰糖心脆甜苹果'
-  }
 }
 
 // 获取当前商品，若 ID 不存在则显示第一个商品作为兜底
