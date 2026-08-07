@@ -294,9 +294,11 @@ const handleDelete = (id) => {
         })
         Toast.success('订单创建成功')
         setTimeout(()=>{
-          Toast('正在跳转订单界面')
-          router.push('/orders?status=pending-payment')
+          Toast.loading('正在跳转订单界面')
         },1500)
+        setTimeout(()=>{
+          router.push('/orders?status=pending-payment')
+        },3000)
       } catch (error) {
         Toast(error.message)
       }

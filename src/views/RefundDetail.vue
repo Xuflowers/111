@@ -305,5 +305,6 @@ const goBack = () => router.go(-1)
   padding-bottom: calc(10px + env(safe-area-inset-bottom));
   background-color: white;
   border-top: 1px solid #ebedf0;
+  border-radius: 8px;
 }
 </style>
