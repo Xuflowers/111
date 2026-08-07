@@ -28,22 +28,26 @@
       </div>
       <div class="meta-row">
         <span>运费：免运费</span>
-        <span>剩余库存：{{ product.stock }} 件</span>
+        <span>发货地：{{ product.origin }}</span>
+        <span>库存：{{ product.stock }} 件</span>
+      </div>
+      <div class="guarantee-row">
+        <van-tag v-for="(g, i) in product.guarantees" :key="i" type="primary" plain size="medium">{{ g }}</van-tag>
       </div>
     </div>
 
-    <!-- 发货地 & 保障 & 参数 区块 -->
-    <van-cell-group class="info-group">
-      <van-cell title="发货" :value="product.origin" />
-      <van-cell title="保障" :value="product.guarantees.join(' ')" />
-      <van-cell title="参数">
-        <template #value>
-          <div class="params">
-            <span v-for="(value, key) in product.specs" :key="key">{{ key }}：{{ value }}</span>
-          </div>
-        </template>
-      </van-cell>
-    </van-cell-group>
+    <!-- 商品参数表格 -->
+    <div class="params-section">
+      <div class="params-title">商品参数</div>
+      <table class="params-table">
+        <tbody>
+          <tr v-for="(value, key) in product.specs" :key="key">
+            <td class="param-key">{{ key }}</td>
+            <td class="param-value">{{ value }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
 
     <!-- 宝贝详情区块 -->
     <div class="detail-section">
@@ -424,16 +428,51 @@ onMounted(() => {
   color: #969799;
   margin-top: 6px;
 }
+.guarantee-row {
+  display: flex;
+  gap: 8px;
+  margin-top: 10px;
+  flex-wrap: wrap;
+}
 .info-group {
   margin: 12px;
   border-radius: 12px;
   overflow: hidden;
 }
-.params {
-  display: flex;
-  gap: 12px;
+.params-section {
+  background: white;
+  margin: 12px;
+  border-radius: 12px;
+  overflow: hidden;
+}
+.params-title {
+  font-size: 16px;
+  font-weight: 500;
+  padding: 12px 16px;
+  border-bottom: 1px solid #f0f0f0;
+}
+.params-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+.params-table tr {
+  border-bottom: 1px solid #f5f5f5;
+}
+.params-table tr:last-child {
+  border-bottom: none;
+}
+.param-key {
+  width: 90px;
+  padding: 10px 16px;
   font-size: 13px;
-  color: #666;
+  color: #969799;
+  background: #fafafa;
+}
+.param-value {
+  padding: 10px 16px;
+  font-size: 13px;
+  color: #323233;
+  text-align: left;
 }
 .detail-section {
   background: white;
