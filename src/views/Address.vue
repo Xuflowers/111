@@ -16,6 +16,7 @@
         :address="editingAddress"
         @close="showAddressDialog = false"
         @submit="handleAddressSubmit"
+        @delete="handleAddressDelete"
     />
   </div>
 </template>
@@ -74,6 +75,13 @@ const handleAddressSubmit = (addressData) => {
   }
   showAddressDialog.value = false
   Toast.success('地址保存成功')
+}
+
+// 从弹窗中删除地址
+const handleAddressDelete = (addressItem) => {
+  store.dispatch('deleteAddress', addressItem.id)
+  showAddressDialog.value = false
+  Toast.success('删除成功')
 }
 
 const goBack = () => router.go(-1)

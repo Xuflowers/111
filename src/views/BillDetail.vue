@@ -156,7 +156,7 @@ const cancelRefund = () => {
       })
     }
     Toast.success('已取消售后')
-    router.push('/orders')
+    router.push('/all')
   }).catch(() => {})
 }
 

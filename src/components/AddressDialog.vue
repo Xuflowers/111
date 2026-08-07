@@ -1,6 +1,5 @@
 <template>
-  <!-- 新增地址：从底部弹出，高度占屏幕 80% -->
-  <van-popup :show="visible" @update:show="$emit('update:visible', $event)" position="bottom" :style="{ height: '70%' }">
+  <van-popup :show="visible" @update:show="$emit('update:visible', $event)" position="bottom" :style="{ height: '80%' }">
     <div class="address-dialog">
       <!-- 弹层头部 -->
       <div class="dialog-header">
@@ -39,7 +38,7 @@
       <div class="dialog-footer">
         <van-button type="default" block @click="close">取消</van-button>
         <van-button type="primary" block @click="submit" :disabled="!canSubmit">保存地址</van-button>
-        <van-button type="warning" block @click="handleDelete" v-if="address">删除地址</van-button>
+        <van-button type="warning" block @click="confirmDelete" v-if="address">删除地址</van-button>
       </div>
     </div>
    </div>
@@ -49,7 +48,7 @@
 <script setup>
 // 新增地址申请弹层组件：用于填写收货地址，收货人和联系电话并上传
 import {computed, ref, watch} from 'vue'
-import { Toast} from 'vant'
+import { Toast, Dialog } from 'vant'
 
 const props = defineProps({
   visible: Boolean,   // 弹层显隐
@@ -77,17 +76,31 @@ const close = () => {
   emit('close')
 }
 
-watch(() => props.address, (newaddress) =>{
-  if (newaddress){
-    formData.value = {...newaddress}
-    addressType.value = newaddress.isDefault?'yes':'no'
-  }else{
-    formData.value = {name:'',tel:'',address:"",isDefault: false}
-    addressType.value = 'no'
+// 重置表单为初始空值
+const resetForm = () => {
+  formData.value = { name: '', tel: '', address: '', isDefault: false }
+  addressType.value = 'no'
+}
+
+// 监听弹窗打开时：根据 address 类型初始化表单
+watch(() => props.visible, (newVisible) => {
+  if (newVisible) {
+    if (props.address) {
+      formData.value = { ...props.address }
+      addressType.value = props.address.isDefault ? 'yes' : 'no'
+    } else {
+      resetForm()
+    }
   }
-},
-    {immediate:true}
-)
+})
+
+// 监听 address 变化（兼容：弹窗已打开时切换地址）
+watch(() => props.address, (newaddress) => {
+  if (props.visible && newaddress) {
+    formData.value = { ...newaddress }
+    addressType.value = newaddress.isDefault ? 'yes' : 'no'
+  }
+}, { immediate: true })
 
 const canSubmit = computed(()=>{
   const { name, tel, address} = formData.value
@@ -107,7 +120,18 @@ const submit = () => {
     isDefault: addressType.value === 'yes'
   }
   emit('submit', submitData)
-  // 不再手动重置，由父组件关闭弹窗触发 watch 重置
+  // 提交后立即清空表单，防止下次打开时残留旧数据
+  resetForm()
+}
+
+// 删除地址前二次确认
+const confirmDelete = () => {
+  Dialog.confirm({
+    title: '确认删除',
+    message: `确定要删除"${props.address.name}"的收货地址吗？`
+  }).then(() => {
+    handleDelete()
+  }).catch(() => {})
 }
 
 const handleDelete = () =>{
