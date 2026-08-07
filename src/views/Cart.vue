@@ -263,10 +263,9 @@ const handleDelete = (id) => {
     })
 
     const onExchange = (code) => {
-      // 兑换一张有门槛的优惠券（满500分可用）
       const newCoupon = {
         available: 1,
-        threshold: 50000,  // 满500元可用
+        threshold: 50000,
         condition: '满500元可用\n最多优惠200元',
         reason: '',
         value: 20000,
@@ -294,7 +293,10 @@ const handleDelete = (id) => {
           couponName: selectedCoupon.value?.name || ''
         })
         Toast.success('订单创建成功')
-        router.push('/orders?status=pending-payment')
+        setTimeout(()=>{
+          Toast('正在跳转订单界面')
+          router.push('/orders?status=pending-payment')
+        },1500)
       } catch (error) {
         Toast(error.message)
       }

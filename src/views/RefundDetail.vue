@@ -300,8 +300,8 @@ const goBack = () => router.go(-1)
   left: 50%;
   transform: translateX(-50%);
   width: 100%;
-  max-width: 375px;
-  padding: 10px 16px;
+  max-width: 320px;
+  padding: 8px 8px;
   padding-bottom: calc(10px + env(safe-area-inset-bottom));
   background-color: white;
   border-top: 1px solid #ebedf0;
