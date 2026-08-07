@@ -90,8 +90,8 @@ const goBack = () => router.go(-1)
 :deep(.van-address-list__add) {
   max-width: 344px;
   margin: 0 auto;
-  //margin-top: 80px;
-  //bottom: 70px !important;
+  margin-top: 30px;
+  bottom: 20px !important;
 
 }
 
