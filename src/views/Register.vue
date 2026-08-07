@@ -141,7 +141,7 @@ input:focus {
 }
 
 .login {
-  margin-left: 52%;
+  margin-left: 50%;
   color: #333;
   padding-top: 2%;
   font-size: 15px;
