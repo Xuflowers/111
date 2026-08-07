@@ -137,9 +137,9 @@ const refundTypeText = computed(() => {
   return '退货退款'   // 默认
 })
 
-// 售后状态样式类
+// 售后状态样式类（与订单详情保持一致：refund→紫色卡片，completed→绿色卡片）
 const orderRefundStatus = computed(() => {
-  return order.value.status === 'refund' ? 'status-pending' : 'status-completed'
+  return order.value.status === 'refund' ? 'status-refund' : 'status-completed'
 })
 
 // 售后状态文案
@@ -203,11 +203,30 @@ const goBack = () => router.go(-1)
   background-color: #f7f8fa;
   padding-bottom: 80px;
 }
+/* 顶部状态卡片（与订单详情样式一致） */
 .refund-status {
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   color: white;
   padding: 30px 20px;
   text-align: center;
+}
+/* 售后中：紫色渐变 + 卡片式布局 */
+.status-refund {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  width: 80%;
+  max-width: 360px;
+  padding: 20px;
+  margin-left: 5%;
+  border-radius: 8px;
+}
+/* 已完成：绿色渐变 + 卡片式布局 */
+.status-completed {
+  background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+  width: 80%;
+  max-width: 360px;
+  padding: 20px;
+  margin-left: 5%;
+  border-radius: 8px;
 }
 .status-icon { margin-bottom: 10px; }
 .status-text { font-size: 18px; font-weight: bold; }
@@ -274,5 +293,17 @@ const goBack = () => router.go(-1)
 }
 .progress-item.active .progress-label {
   color: #667eea;
+}
+.bottom-actions {
+  position: fixed;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100%;
+  max-width: 375px;
+  padding: 10px 16px;
+  padding-bottom: calc(10px + env(safe-area-inset-bottom));
+  background-color: white;
+  border-top: 1px solid #ebedf0;
 }
 </style>

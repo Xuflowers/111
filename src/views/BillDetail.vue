@@ -180,10 +180,15 @@ const goBack = () => router.go(-1)
 }
 .status-refund {
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  width: 80%;
+  max-width: 360px;
+  padding: 20px;
+  margin-left: 5%;
+  border-radius: 8px;
 }
 .status-completed {
   background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
-  width: 80%;                         /* 宽度占屏幕 90%，最大 360px */
+  width: 80%;
   max-width: 360px;
   padding: 20px;
   margin-left: 5%;
