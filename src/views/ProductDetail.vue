@@ -60,7 +60,7 @@
 
     <van-action-bar>
       <van-action-bar-icon icon="chat-o" text="客服" @click="onContact" />
-      <van-action-bar-icon :icon="isFav ? 'like' : 'like-o'" :color="isFav ? '#ffff08' : '#000000'" text="收藏" @click="toggleFav"/>
+      <van-action-bar-icon :icon="isFav ? 'like' : 'like-o'" :color="isFav ? '#ff0808' : '#000000'" text="收藏" @click="toggleFav"/>
       <van-action-bar-icon icon="cart-o" text="购物车" @click="$router.push('/cart')" :badge="store.getters.totalNum>0?store.getters.totalNum:null" />
       <van-action-bar-button type="warning" text="加入购物车" @click="addToCart" />
       <van-action-bar-button type="danger" text="立即购买" @click="onBuy" />
