@@ -58,7 +58,7 @@
   </div>
 </template>
 
-<script setup lang="ts">
+<script setup>
 import { ref, nextTick } from 'vue'
 import { useRouter } from 'vue-router'
 import { Toast } from 'vant'
@@ -71,13 +71,7 @@ const userAvatar = 'https://img.yzcdn.cn/vant/cat.jpeg'
 const assistantAvatar = 'https://img.yzcdn.cn/vant/apple-1.jpg'
 
 // 消息列表
-interface Message {
-  role: 'user' | 'assistant'
-  content: string
-  time?: string
-}
-
-const messages = ref<Message[]>([
+const messages = ref([
   {
     role: 'assistant',
     content: '您好，请问有什么可以帮您？<br>您可以选择快捷问题或自定义输入。'
@@ -97,7 +91,7 @@ const isQuickMode = ref(false)    // true: 快捷模式, false: 输入模式
 const inputText = ref('')
 
 // 消息容器
-const messageContainer = ref<HTMLElement | null>(null)
+const messageContainer = ref(null)
 
 // 滚动到底部
 const scrollToBottom = async () => {
@@ -113,7 +107,7 @@ const toggleMode = () => {
   // 切换至输入模式时，自动聚焦输入框（可选）
   if (!isQuickMode.value) {
     nextTick(() => {
-      const input = document.querySelector('.input-mode .van-field__control') as HTMLInputElement
+      const input = document.querySelector('.input-mode .van-field__control')
       if (input) input.focus()
     })
   }
@@ -135,7 +129,7 @@ const sendInputMessage = () => {
 }
 
 // 发送快捷消息
-const sendQuickMessage = (q: { text: string; answer: string }) => {
+const sendQuickMessage = (q) => {
   // 添加用户消息（问题）
   addUserMessage(q.text)
   // 模拟客服回复（使用预设答案）
@@ -145,7 +139,7 @@ const sendQuickMessage = (q: { text: string; answer: string }) => {
 }
 
 // 辅助方法：添加用户消息
-const addUserMessage = (content: string) => {
+const addUserMessage = (content) => {
   messages.value.push({
     role: 'user',
     content: content,
@@ -155,7 +149,7 @@ const addUserMessage = (content: string) => {
 }
 
 // 辅助方法：添加客服消息
-const addAssistantMessage = (content: string) => {
+const addAssistantMessage = (content) => {
   messages.value.push({
     role: 'assistant',
     content: content,
@@ -165,7 +159,7 @@ const addAssistantMessage = (content: string) => {
 }
 
 // 模拟通用回复（当输入模式没有预设答案时）
-const simulateReply = (answer: string) => {
+const simulateReply = (answer) => {
   setTimeout(() => {
     addAssistantMessage(answer)
   }, 800 + Math.random() * 1000)

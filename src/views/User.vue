@@ -56,6 +56,14 @@
         <span>❓ 我的帮助/客服</span>
         <span>></span>
       </div>
+      <div class="list-item" @click="goToFavorites">
+        <span>❤️ 我的收藏</span>
+        <span>></span>
+      </div>
+      <div class="list-item" @click="goToSetting">
+        <span>⚙️ 设置</span>
+        <span>></span>
+      </div>
     </div>
 
     <!-- 底部导航 -->
@@ -140,6 +148,19 @@ const goToHelp = () => {
     return
   }
   router.push('/help')
+}
+
+const goToFavorites = () => {
+  if (!userInfo.value) {
+    alert('请先登录！')
+    router.push('/login')
+    return
+  }
+  router.push('/favorites')
+}
+
+const  goToSetting = () => {
+  router.push('/setting')
 }
 </script>
 

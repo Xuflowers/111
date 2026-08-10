@@ -27,9 +27,13 @@
               :key="item.id"
               :title="item.name"
               :price="(item.price / 100).toFixed(2)"
+              :desc="item.desc"
               :thumb="item.image"
               @click="$router.push('/product/' + item.id)"
           >
+            <template #tags>
+              <van-tag plain type="danger" v-if="item.tag">热销</van-tag>
+            </template>
             <template #footer>
               <van-button
                   size="mini"
@@ -70,6 +74,7 @@ const handleAddToCart = (item) => {
 
 // ---------- 商品图片映射表 ----------
 const productImages = {
+  100: 'https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=fresh%20milk%20carton%20white%20background&image_size=square',
   101: 'https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=fresh%20avocado%20fruit%20on%20white%20background&image_size=square',
   102: 'https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=durian%20fruit%20with%20thorn%20shell&image_size=square',
   103: 'https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=red%20cherries%20with%20green%20stem&image_size=square',
@@ -90,34 +95,35 @@ const categories = [
   {
     name: '生鲜',
     products: [
-      { id: 101, name: '进口牛油果', price: 2990, image: productImages[101] },
-      { id: 102, name: '泰国金枕榴莲', price: 5990, image: productImages[102] },
-      { id: 103, name: '智利车厘子', price: 8990, image: productImages[103] },
-      { id: 104, name: '秘鲁蓝莓', price: 2490, image: productImages[104] }
+      { id: 100, name: '澳洲进口牛奶',desc: '澳洲直采，醇香浓郁', price: 1290, images: productImages[100], tag:true},
+      { id: 101, name: '进口牛油果', desc: '新鲜采摘', price: 2990, image: productImages[101], tag:true },
+      { id: 102, name: '泰国金枕榴莲', desc: '果肉饱满', price: 5990, image: productImages[102], tag:true},
+      { id: 103, name: '智利车厘子', desc: '颗颗饱满，脆甜多汁', price: 8990, image: productImages[103], tag:false },
+      { id: 104, name: '秘鲁蓝莓', desc: '花青素丰富，酸甜可口', price: 2490, image: productImages[104], tag:false }
     ]
   },
   {
     name: '零食',
     products: [
-      { id: 201, name: '乐事薯片', price: 890, image: productImages[201] },
-      { id: 202, name: '德芙巧克力', price: 1890, image: productImages[202] },
-      { id: 203, name: '三只松鼠坚果', price: 3990, image: productImages[203] }
+      { id: 201, name: '乐事薯片', desc: '薄脆香酥', price: 890, image: productImages[201], tag:true },
+      { id: 202, name: '德芙巧克力', desc: '丝滑浓郁，纵享丝滑', price: 1890, image: productImages[202], tag:false },
+      { id: 203, name: '三只松鼠坚果', desc: '混合果仁，科学配比', price: 3990, image: productImages[203], tag:false }
     ]
   },
   {
     name: '百货',
     products: [
-      { id: 301, name: '维达抽纸', price: 2990, image: productImages[301] },
-      { id: 302, name: '蓝月亮洗衣液', price: 4990, image: productImages[302] },
-      { id: 303, name: '收纳箱', price: 3990, image: productImages[303] }
+      { id: 301, name: '维达抽纸', desc: '柔韧不易破，湿水不易烂', price: 2990, image: productImages[301], tag:false },
+      { id: 302, name: '蓝月亮洗衣液', desc: '深层洁净，低泡易漂', price: 4990, image: productImages[302], tag:true },
+      { id: 303, name: '收纳箱', desc: '加厚耐用，带滑轮', price: 3990, image: productImages[303], tag:false }
     ]
   },
   {
     name: '酒水',
     products: [
-      { id: 401, name: '青岛啤酒', price: 690, image: productImages[401] },
-      { id: 402, name: '长城干红', price: 12990, image: productImages[402] },
-      { id: 403, name: '江小白', price: 2990, image: productImages[403] }
+      { id: 401, name: '青岛啤酒', desc: '麦香浓郁，泡沫细腻', price: 690, image: productImages[401], tag:false },
+      { id: 402, name: '长城干红', desc: '赤霞珠干红，单宁柔和', price: 12990, image: productImages[402], tag:false },
+      { id: 403, name: '江小白', desc: '单纯年轻，表达真我', price: 2990, image: productImages[403], tag:true }
     ]
   }
 ]

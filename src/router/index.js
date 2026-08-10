@@ -7,6 +7,7 @@ import User from '../views/User.vue'
 import ProductDetail from '../views/ProductDetail.vue'
 import Login from '../views/Login.vue'
 import Register from "@/views/Register.vue";
+import Setting from "@/views/Setting.vue";
 
 // 路由表：声明 path 与组件的映射关系
 const routes = [
@@ -19,6 +20,8 @@ const routes = [
   { path: '/user', component: User },                              // 个人中心
   { path: '/login', name: 'Login', component: Login },             // 登录页
   { path: '/register', name: 'Register', component: Register },
+  { path: '/favorites', component: () => import('../views/Favorites.vue') },
+  { path: '/setting', component: Setting},
   // 以下路由采用懒加载（动态 import），按需加载以减小首屏体积
   { path: '/search', name: 'SearchResult', component: () => import('../views/SearchResult.vue') },  // 搜索结果
   { path: '/orders', component: () => import('../views/Orders.vue') },                              // 订单列表

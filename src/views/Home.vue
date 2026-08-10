@@ -84,7 +84,7 @@ export default {
     const hotProducts = [
       { id: 101, name: '进口牛油果', price: 2990, sales: 1200, desc: '新鲜采摘', image: productImages[101], tag: true },
       { id: 102, name: '泰国金枕榴莲', price: 5990, sales: 800, desc: '果肉饱满', image: productImages[102], tag: true },
-      { id: 201, name: '乐事薯片', price: 890, sales: 2000, desc: '薄脆香酥', image: productImages[201], tag: false }
+      { id: 201, name: '乐事薯片', price: 890, sales: 2000, desc: '薄脆香酥', image: productImages[201], tag: true }
     ]
 
     // 搜索：跳转到搜索结果页并携带关键词
@@ -114,6 +114,7 @@ export default {
         name: product.name,
         price: product.price,
         image: product.image,
+        tag: product.tag,
         count: 1
       })
       Toast.success('已加入购物车')

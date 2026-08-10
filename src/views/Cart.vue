@@ -16,11 +16,12 @@
             :num="item.count"
             :price="(item.price / 100).toFixed(2)"
             :title="item.name"
+            :desc="item.desc"
             :thumb="getCartItemImage(item)"
             class="cart-card"
         >
           <template #tags>
-            <van-tag plain type="danger" style="margin-right: 4px;">热销</van-tag>
+            <van-tag plain type="danger" v-if="item.tag">热销</van-tag>
           </template>
           <template #num>
             <van-stepper

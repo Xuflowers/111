@@ -3,9 +3,9 @@
     <!-- 顶部导航栏 -->
     <van-nav-bar
         title="商品详情"
-        left-text="返回分类"
+        left-text="返回"
         left-arrow
-        @click-left="$router.push('/category')"
+        @click-left="$router.go(-1)"
         fixed
     />
 
@@ -60,6 +60,7 @@
 
     <van-action-bar>
       <van-action-bar-icon icon="chat-o" text="客服" @click="onContact" />
+      <van-action-bar-icon :icon="isFav ? 'like' : 'like-o'" :color="isFav ? '#ffff08' : '#000000'" text="收藏" @click="toggleFav"/>
       <van-action-bar-icon icon="cart-o" text="购物车" @click="$router.push('/cart')" :badge="store.getters.totalNum>0?store.getters.totalNum:null" />
       <van-action-bar-button type="warning" text="加入购物车" @click="addToCart" />
       <van-action-bar-button type="danger" text="立即购买" @click="onBuy" />
@@ -73,7 +74,6 @@ import { ref, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useStore } from 'vuex'
 import { Toast } from 'vant'
-
 const route = useRoute()
 const router = useRouter()
 const store = useStore()
@@ -147,8 +147,10 @@ const allProducts = {
   // 生鲜类 (ID 100-104)
   100: {
     id: 100,
+    tag: false,
     name: '澳洲进口牛奶',
     price: 1290,
+    desc: '澳洲直采，醇香浓郁',
     stock: 100,
     isNew: false,
     origin: '澳大利亚',
@@ -160,8 +162,10 @@ const allProducts = {
   },
   101: {
     id: 101,
+    tag: true,
     name: '进口牛油果',
     price: 2990,
+    desc: '新鲜采摘',
     stock: 100,
     isNew: false,
     origin: '墨西哥',
@@ -173,8 +177,10 @@ const allProducts = {
   },
   102: {
     id: 102,
+    tag: true,
     name: '泰国金枕榴莲',
     price: 5990,
+    desc: '果肉饱满',
     stock: 50,
     isNew: true,
     origin: '泰国',
@@ -188,6 +194,7 @@ const allProducts = {
     id: 103,
     name: '智利车厘子',
     price: 8990,
+    desc: '颗颗饱满，脆甜多汁',
     stock: 80,
     isNew: true,
     origin: '智利',
@@ -201,6 +208,7 @@ const allProducts = {
     id: 104,
     name: '秘鲁蓝莓',
     price: 2490,
+    desc: '花青素丰富，酸甜可口',
     stock: 120,
     isNew: false,
     origin: '秘鲁',
@@ -213,8 +221,10 @@ const allProducts = {
   // 零食类 (ID 201-203)
   201: {
     id: 201,
+    tag: true,
     name: '乐事薯片',
     price: 890,
+    desc: '薄脆香酥',
     stock: 200,
     isNew: false,
     origin: '中国上海',
@@ -228,6 +238,7 @@ const allProducts = {
     id: 202,
     name: '德芙巧克力',
     price: 1890,
+    desc: '丝滑浓郁，纵享丝滑',
     stock: 150,
     isNew: false,
     origin: '中国北京',
@@ -241,6 +252,7 @@ const allProducts = {
     id: 203,
     name: '三只松鼠坚果',
     price: 3990,
+    desc: '混合果仁，科学配比',
     stock: 90,
     isNew: true,
     origin: '安徽芜湖',
@@ -255,6 +267,7 @@ const allProducts = {
     id: 301,
     name: '维达抽纸',
     price: 2990,
+    desc: '柔韧不易破，湿水不易烂',
     stock: 500,
     isNew: false,
     origin: '广东江门',
@@ -266,8 +279,10 @@ const allProducts = {
   },
   302: {
     id: 302,
+    tag: true,
     name: '蓝月亮洗衣液',
     price: 4990,
+    desc: '深层洁净，低泡易漂',
     stock: 80,
     isNew: false,
     origin: '广东广州',
@@ -281,6 +296,7 @@ const allProducts = {
     id: 303,
     name: '收纳箱',
     price: 3990,
+    desc: '加厚耐用，带滑轮',
     stock: 60,
     isNew: true,
     origin: '浙江台州',
@@ -295,6 +311,7 @@ const allProducts = {
     id: 401,
     name: '青岛啤酒',
     price: 690,
+    desc: '麦香浓郁，泡沫细腻',
     stock: 300,
     isNew: false,
     origin: '山东青岛',
@@ -319,8 +336,10 @@ const allProducts = {
   },
   403: {
     id: 403,
+    tag: true,
     name: '江小白',
     price: 2990,
+    desc: '单纯高粱酒，表达真我',
     stock: 100,
     isNew: false,
     origin: '重庆',
@@ -340,6 +359,20 @@ const product = computed(() => {
 
 // 客服按钮：占位提示
 const onContact = () => Toast('客服功能暂未接入')
+
+//收藏按钮：点击加入收藏
+const isFav = computed(() => store.getters.isFavorite(product.value.id))
+const toggleFav = () =>{
+  store.dispatch('toggleFavorite',{
+    id: product.value.id,
+    name: product.value.name,
+    price: product.value.price,
+    image: product.value.images[0],
+    tag: product.value.tag,
+    desc: product.value.desc
+  })
+  Toast(isFav.value ? '已收藏' : '已取消收藏')
+}
 // 立即购买：先将商品加入购物车，再跳转到购物车页面
 const onBuy = () => {
   store.dispatch('addToCart', {
@@ -347,6 +380,8 @@ const onBuy = () => {
     name: product.value.name,
     price: product.value.price,
     image: product.value.images[0],
+    tag: product.value.tag,
+    desc: product.value.desc,
     count: 1
   })
   Toast.success('已加入购物车，即将跳转')
@@ -361,7 +396,9 @@ const addToCart = () => {
     id: product.value.id,
     name: product.value.name,
     price: product.value.price,
-    image: product.value.images[0]
+    image: product.value.images[0],
+    tag: product.value.tag,
+    desc: product.value.desc
   })
   Toast.success('已加入购物车')
 }

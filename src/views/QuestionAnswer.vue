@@ -10,7 +10,7 @@
   </div>
 </template>
 
-<script setup lang="ts">
+<script setup>
 import {useRouter} from "vue-router";
 import {Toast} from "vant";
 

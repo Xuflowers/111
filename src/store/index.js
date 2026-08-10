@@ -1,4 +1,4 @@
-import { createStore } from 'vuex'
+import index, { createStore } from 'vuex'
 
 // 购物车持久化：从 localStorage 读取已保存的购物车数据
 const loadCart = () => {
@@ -39,38 +39,61 @@ const saveAccount = (account) => {
     localStorage.setItem('account-list', JSON.stringify(account))
 }
 
-const STORAGE_KEY_COUPOND='cart_coupons'
+// 优惠券默认数据与存储键
+const STORAGE_KEY_COUPON = 'cart_coupons'
 const STORAGE_KEY_CHOSEN = 'cart_chosen_coupon'
 
-const loadCoupons = () =>{
-    const data = localStorage.getItem(STORAGE_KEY_COUPONS)
+const defaultCoupon = [
+    {
+        id: 1,
+        name: '满100减10优惠券',
+        amount: 1000, // 分
+        threshold: 10000, // 分
+        desc: '全场通用'
+    }
+]
+
+// 浏览历史持久化
+const loadHistory = () => {
+    const data = localStorage.getItem('browse-history')
+    return data ? JSON.parse(data) : []
+}
+const saveHistory = (list) => {
+    localStorage.setItem('browse-history', JSON.stringify(list))
+}
+
+// 收藏持久化
+const loadFavorites = () => {
+    const data = localStorage.getItem('favorite-list')
+    return data ? JSON.parse(data) : []
+}
+const saveFavorites = (list) => {
+    localStorage.setItem('favorite-list', JSON.stringify(list))
+}
+
+// 优惠券持久化
+const loadCoupons = () => {
+    const data = localStorage.getItem(STORAGE_KEY_COUPON)
     if (data) {
-        try{
+        try {
             return JSON.parse(data)
-        }catch {
-            return[defaultCoupon]
+        } catch {
+            return defaultCoupon
         }
     }
-    return[defaultCoupon]
+    return defaultCoupon
 }
 
-const saveCoupons = (list)=>{
-    localStorage.setItem(STORAGE_KEY_COUPOND,JSON.stringify(list))
+const saveCoupons = (list) => {
+    localStorage.setItem(STORAGE_KEY_COUPON, JSON.stringify(list))
 }
 
-const saveChosen = (index)=>{
-    localStorage.setItem(STORAGE_KEY_CHOSEN,string(index))
+const saveChosen = (index) => {
+    localStorage.setItem(STORAGE_KEY_CHOSEN, String(index))
 }
 
 // Vuex 仓库：统一管理购物车、订单、售后记录、地址、账户数据记录
 export default createStore({
-    state: {
-        cartList: loadCart(),        // 购物车：以商品 id 为键的对象
-        orderList: loadOrders(),     // 订单列表：数组，按创建时间倒序
-        addressList: loadAddress(),  // 地址列表：数组
-        accountList: loadAccount(),  // 账户列表：数组
-        refundRecords: []            // 售后记录：仅在内存中维护
-    },
     mutations: {
         // ----------------- 购物车 mutations -----------------
         // 添加商品到购物车：已存在则数量 +1，否则新建条目
@@ -85,6 +108,8 @@ export default createStore({
                     price: product.price,
                     image: product.image,
                     count: product.count || 1,
+                    tag: product.tag,
+                    desc: product.desc,
                     checked: true
                 }
             }
@@ -204,7 +229,34 @@ export default createStore({
                 })
                 saveAccount(state.accountList)
             }
+        },
+        // ----------------- 收藏 mutations -----------------
+        TOGGLE_FAVORITE(state, product) {
+            const index = state.favoriteList.findIndex(p => p.id === product.id)
+            if (index !== -1) {
+                state.favoriteList.splice(index, 1)
+            } else {
+                state.favoriteList.push({
+                    id: product.id,
+                    name: product.name,
+                    price: product.price,
+                    image: product.image,
+                    tag: product.tag,
+                    desc: product.desc,
+                    addTime: new Date().toISOString()
+                })
+            }
+            saveFavorites(state.favoriteList)
         }
+    },
+    state: {
+        cartList: loadCart(),        // 购物车：以商品 id 为键的对象
+        orderList: loadOrders(),     // 订单列表：数组，按创建时间倒序
+        addressList: loadAddress(),  // 地址列表：数组
+        accountList: loadAccount(),  // 账户列表：数组
+        browseHistory: loadHistory(),
+        favoriteList: loadFavorites(),
+        refundRecords: []            // 售后记录：仅在内存中维护
     },
     actions: {
         // 添加商品到购物车
@@ -227,7 +279,8 @@ export default createStore({
                 name: item.name,
                 price: item.price,
                 count: item.count,
-                image: item.image
+                image: item.image,
+                desc: item.desc
             }))
             const newOrder = {
                 id: orderId,
@@ -276,6 +329,9 @@ export default createStore({
         },
         setDefaultAddress({ commit }, id) {
             commit('SET_DEFAULT_ADDRESS', id)
+        },
+        toggleFavorite({ commit }, product) {
+            commit('TOGGLE_FAVORITE', product)
         }
     },
     getters: {
@@ -300,6 +356,7 @@ export default createStore({
         },
         // 全部订单（按创建时间倒序）
         allOrders: (state) => [...state.orderList].sort((a, b) => new Date(b.createTime) - new Date(a.createTime)),
+        allProduct: (state) => [...state.favoriteList].sort((a, b) => new Date(b.createTime) - new Date(a.createTime)),
         // 各状态订单筛选
         pendingPaymentOrders: (state) => state.orderList.filter(o => o.status === 'pending_payment'),
         pendingReceiptOrders: (state) => state.orderList.filter(o => o.status === 'pending_receipt'),
@@ -307,6 +364,8 @@ export default createStore({
         refundOrders: (state) => state.orderList.filter(o => o.status === 'refund'),
         // 售后记录
         refundRecords: (state) => state.refundRecords,
-        pendingRefundRecords: (state) => state.refundRecords.filter(r => r.status === 'pending')
+        pendingRefundRecords: (state) => state.refundRecords.filter(r => r.status === 'pending'),
+        isFavorite: (state) => (id) => state.favoriteList.some(p => p.id === id),
+        favoriteCount: (state) => state.favoriteList.length
     }
 })
