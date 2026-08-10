@@ -3,7 +3,10 @@
     <!-- 顶部用户信息区 -->
     <div class="user-header">
       <div v-if="userInfo" class="logged-in">
-        <div class="avatar">👤</div>
+        <div class="avatar">
+          <img v-if="userInfo.avatar" :src="userInfo.avatar" class="avatar-img" />
+          <span v-else>👤</span>
+        </div>
         <div class="info">
           <div class="username">你好，{{ userInfo.name }}</div>
           <button class="logout-btn" @click="handleLogout">退出登录</button>
@@ -187,6 +190,12 @@ const  goToSetting = () => {
   display: flex;
   align-items: center;
   justify-content: center;
+  overflow: hidden;
+}
+.avatar-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 .info {
   flex: 1;

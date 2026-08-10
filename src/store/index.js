@@ -225,8 +225,17 @@ export default createStore({
             if (!exists) {
                 state.accountList.push({
                     username: account.username,
-                    password: account.password
+                    password: account.password,
+                    avatar: account.avatar || ''
                 })
+                saveAccount(state.accountList)
+            }
+        },
+        // 更新账户信息（密码、头像等）
+        UPDATE_ACCOUNT_INFO(state, { username, newData }) {
+            const index = state.accountList.findIndex(a => a.username === username)
+            if (index !== -1) {
+                Object.assign(state.accountList[index], newData)
                 saveAccount(state.accountList)
             }
         },
@@ -332,6 +341,10 @@ export default createStore({
         },
         toggleFavorite({ commit }, product) {
             commit('TOGGLE_FAVORITE', product)
+        },
+        // 更新账户信息（密码、头像等）
+        updateAccountInfo({ commit }, payload) {
+            commit('UPDATE_ACCOUNT_INFO', payload)
         }
     },
     getters: {
