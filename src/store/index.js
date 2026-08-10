@@ -236,7 +236,7 @@ export default createStore({
             if (index !== -1) {
                 state.favoriteList.splice(index, 1)
             } else {
-                state.favoriteList.push({
+                state.favoriteList.unshift({
                     id: product.id,
                     name: product.name,
                     price: product.price,
