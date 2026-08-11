@@ -185,6 +185,7 @@ const goBack = () => router.go(-1)
   padding: 20px;
   margin-left: 5%;
   border-radius: 8px;
+  margin-top: 10px;
 }
 .status-completed {
   background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
@@ -193,6 +194,7 @@ const goBack = () => router.go(-1)
   padding: 20px;
   margin-left: 5%;
   border-radius: 8px;
+  margin-top: 10px;
 }
 .status-icon { margin-bottom: 10px; }
 .status-text { font-size: 18px; font-weight: bold; }

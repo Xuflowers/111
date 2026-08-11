@@ -293,9 +293,15 @@ const handleDelete = (id) => {
           discount: discountPrice.value,
           couponName: selectedCoupon.value?.name || ''
         })
-        Toast.success('订单创建成功')
+        Toast.success({
+          message:'订单创建成功',
+          forbidClick:true,
+        }),
         setTimeout(()=>{
-          Toast.loading('正在跳转订单界面')
+          Toast.loading({
+            message:'正在跳转订单界面',
+            forbidClick:true,
+          });
         },1500)
         setTimeout(()=>{
           router.push('/orders?status=pending-payment')

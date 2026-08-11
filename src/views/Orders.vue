@@ -1,6 +1,6 @@
 <template>
   <div class="orders-page">
-    <van-nav-bar title="我的订单" left-arrow @click-left="goBack" />
+    <van-nav-bar title="我的订单" left-arrow @click-left="goUser" />
     <van-tabs v-model:active="activeTab" @change="onTabChange">
       <van-tab title="全部" name="all">
         <OrderList :orders="allOrders" @pay="handlePay" @confirm="handleConfirm" @review="handleReview" @apply="handleApply" @cancel="handleCancelRefund" @completed="handleViewDetail"/>
@@ -55,6 +55,10 @@ const refundOrders = computed(() => store.getters.refundOrders)
 // Tab 切换回调
 const onTabChange = (name) => {
   activeTab.value = name
+}
+
+const goUser = () =>{
+  router.push("/User")
 }
 
 // 支付：将订单状态从"待付款"改为"待收货"

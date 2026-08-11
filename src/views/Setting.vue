@@ -206,6 +206,10 @@ const confirmPasswordChange = () => {
     Toast.fail('新密码不能与旧密码相同')
     return
   }
+  if (newPassword.value.length < 6) {
+    Toast('密码最少为6位')
+    return
+  }
   // 提交更新
   store.dispatch('updateAccountInfo', {
     username: userInfo.value.name,

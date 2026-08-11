@@ -218,6 +218,7 @@ const goBack = () => router.go(-1)
   padding: 20px;
   margin-left: 5%;
   border-radius: 8px;
+  margin-top: 10px;
 }
 /* 已完成：绿色渐变 + 卡片式布局 */
 .status-completed {
@@ -227,6 +228,7 @@ const goBack = () => router.go(-1)
   padding: 20px;
   margin-left: 5%;
   border-radius: 8px;
+  margin-top: 10px;
 }
 .status-icon { margin-bottom: 10px; }
 .status-text { font-size: 18px; font-weight: bold; }
