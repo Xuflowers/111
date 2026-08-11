@@ -166,11 +166,18 @@ const confirmPasswordChange = () => {
     Toast.fail('新密码不能为空')
     return
   }
+  if (!confirmPassword.value) {
+    Toast.fail('请确认密码')
+    return
+  }
   if (newPassword.value !== confirmPassword.value) {
     Toast.fail('两次输入的新密码不一致')
     return
   }
-
+  if (newPassword.value === oldPassword.value) {
+    Toast.fail('新密码不能与旧密码相同')
+    return
+  }
   // 提交更新
   store.dispatch('updateAccountInfo', {
     username: userInfo.value.name,
