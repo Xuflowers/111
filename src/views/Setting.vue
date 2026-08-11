@@ -6,17 +6,17 @@
     <van-cell-group inset style="margin-top: 10px;">
       <van-cell title="更换头像" is-link @click="showChangeAvatar = true" />
       <van-cell title="修改密码" is-link @click="showChangePassword = true" />
-      <van-cell title="退出登录" is-link @click="handleLogout" />
+      <van-cell title="退出登录" is-link @click="showHandleLogout = true" />
     </van-cell-group>
 
     <!-- 更换头像弹窗 -->
     <van-popup
       v-model:show="showChangeAvatar"
-      position="bottom"
+      position="center"
       round
       closeable
       duration="0.3"
-      :style="{ height: '40%' }"
+      :style="{ weight: '60%',maxWidth:'320px' }"
     >
       <div class="avatar-popup-content">
         <h3>更换头像</h3>
@@ -47,11 +47,11 @@
     <!-- 修改密码弹窗 -->
     <van-popup
       v-model:show="showChangePassword"
-      position="bottom"
+      position="center"
       round
       closeable
       duration="0.3"
-      :style="{ height: '45%' }"
+      :style="{ weight: '60%',maxWidth:'320px'}"
     >
       <div class="pwd-popup-content">
         <h3>修改密码</h3>
@@ -83,6 +83,33 @@
         </van-button>
       </div>
     </van-popup>
+
+    <van-popup
+      v-model:show="showHandleLogout"
+      position="center"
+      closeable
+      round
+      duration="0.5"
+      :style="{ weight: '60%',maxWidth:'320px'}">
+      <div class="HandleLogout-popup">
+        <h3>是否退出登录？</h3>
+        <p>退出后需要重新登录使用</p>
+        <div class="button-group">
+          <van-button
+              type="default"
+              block
+              @click="showHandleLogout=false"
+              style="margin-bottom: 5px"
+          >取消</van-button>
+          <van-button
+              type="warning"
+              block
+              @click="handleLogout"
+              style="margin-bottom: 5px"
+          >确认</van-button>
+        </div>
+      </div>
+    </van-popup>
   </div>
 </template>
 
@@ -99,6 +126,7 @@ const store = useStore()
 const userInfo = ref(null)
 const showChangeAvatar = ref(false)
 const showChangePassword = ref(false)
+const showHandleLogout = ref(false)
 
 // 头像相关
 const previewAvatar = ref('')
@@ -196,7 +224,9 @@ const handleLogout = () => {
   localStorage.removeItem('user-token')
   localStorage.removeItem('user-info')
   Toast.success('已退出登录')
+  setTimeout(() => {
   router.push('/login')
+  },500)
 }
 
 const goBack = () => router.go(-1)
@@ -248,5 +278,19 @@ const goBack = () => router.go(-1)
   text-align: center;
   margin-bottom: 20px;
   font-size: 18px;
+}
+.HandleLogout-popup{
+  text-align: center;
+}
+.HandleLogout-popup h3{
+  margin: 0 0 8px 0;
+  margin-top: 40px;
+}
+.HandleLogout-popup .button-group{
+  display: flex ;
+  padding: 10px;
+}
+.HandleLogout-popup .button-group .van-button{
+  margin: 10px;
 }
 </style>

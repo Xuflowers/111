@@ -1,5 +1,5 @@
 <template>
-  <van-popup :show="visible" @update:show="$emit('update:visible', $event)" position="bottom" :style="{ height: '80%' }">
+  <van-popup round :show="visible" @update:show="$emit('update:visible', $event)" position="bottom" :style="{ height: '80%' }">
     <div class="address-dialog">
       <!-- 弹层头部 -->
       <div class="dialog-header">
