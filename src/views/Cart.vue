@@ -266,14 +266,14 @@ const handleDelete = (id) => {
     const onExchange = (code) => {
       const newCoupon = {
         available: 1,
-        threshold: 50000,
-        condition: '满500元可用\n最多优惠200元',
+        threshold: 5000,
+        condition: '满50元可用\n最多优惠20元',
         reason: '',
-        value: 20000,
+        value: 2000,
         name: '兑换券',
         startAt: Math.floor(Date.now() / 1000),
         endAt: Math.floor(Date.now() / 1000) + 86400 * 30,
-        valueDesc: '200.0',
+        valueDesc: '20.0',
         unitDesc: '元'
       }
       coupons.value.push(newCoupon)

@@ -39,11 +39,14 @@
   <van-submit-bar v-if="!isManaging"
       :button-text="`加入购物车(${checkedFavCount})`"
       @submit="handleAddToCart"
-  ></van-submit-bar>
+  >
+  <van-checkbox :model-value="allFavChecked" @click="toggleFavAll">全选</van-checkbox>
+  </van-submit-bar>
   <van-submit-bar v-else
       :button-text="`删除(${checkedFavCount})`"
-      @submit="handleDeleteFav"
-  ></van-submit-bar>
+      @submit="handleDeleteFav">
+    <van-checkbox :model-value="allFavChecked" @click="toggleFavAll">全选</van-checkbox>
+  </van-submit-bar>
 </template>
 
 <script setup>
@@ -57,6 +60,7 @@
   // 从 Vuex store 获取收藏列表
   const favorites = computed(() => store.state.favoriteList);
   const checkedFavCount = computed(() => store.getters.checkedFavCount)
+  const allFavChecked = computed(() => favorites.value.length > 0 && favorites.value.every(item => item.checked))
 
   const goToDetail = (id) => {
     router.push(`/product/${id}`);
@@ -94,6 +98,9 @@
   const toggleFavChecked = (id) =>{
     store.commit('TOGGLE_FAVCHECK',id)
   }
+  const toggleFavAll = () => {
+    store.commit('CHECK_FAVALL', !allFavChecked.value)
+  }
 </script>
 
 <style scoped>
@@ -121,7 +128,17 @@
   padding: 5px;
   border-radius: 8px;
 }
+:deep(.van-submit-bar__bar) {
+  display: inline-flex;
+  min-width: 320px;
+}
+:deep(.van-button){
+  margin-left: 46%;
+}
 .manage-btn{
-
+  color: #666;
+  border: #666 1px solid;
+  width: 48px;
+  border-radius: 10px;
 }
 </style>
