@@ -1,12 +1,11 @@
 <template>
   <!-- 设置页：提供更换头像、修改密码、退出登录等功能 -->
   <div class="setting-page">
-    <van-nav-bar title="设置" left-arrow @click="goBack" />
-
+    <van-nav-bar title="设置" left-arrow @click-left="goBack"/>
     <van-cell-group inset style="margin-top: 10px;">
       <van-cell title="更换头像" is-link @click="showChangeAvatar = true" />
       <van-cell title="修改密码" is-link @click="showChangePassword = true" />
-      <van-cell title="退出登录" is-link @click="showHandleLogout = true" />
+      <van-cell title="退出登录" is-link class="logout-cell" @click="showHandleLogout = true" />
     </van-cell-group>
 
     <!-- 更换头像弹窗 -->
@@ -296,5 +295,15 @@ const goBack = () => router.go(-1)
 }
 .HandleLogout-popup .button-group .van-button{
   margin: 10px;
+}
+
+.setting-page :deep(.van-cell-group) {
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.setting-page :deep(.logout-cell .van-cell__title) {
+  color: #ee0a24;
+  font-weight: 500;
 }
 </style>

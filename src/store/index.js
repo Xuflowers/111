@@ -158,6 +158,11 @@ export default createStore({
                 saveOrders(state.orderList)
             }
         },
+        // 删除订单（取消订单时使用）
+        REMOVE_ORDER(state, orderId) {
+            state.orderList = state.orderList.filter(o => o.id !== orderId)
+            saveOrders(state.orderList)
+        },
         // 新建售后记录
         CREATE_REFUND_RECORD(state, record) {
             state.refundRecords.unshift(record)
@@ -252,11 +257,26 @@ export default createStore({
                     image: product.image,
                     tag: product.tag,
                     desc: product.desc,
+                    checked:false,
+                    count:1,
                     addTime: new Date().toISOString()
                 })
             }
             saveFavorites(state.favoriteList)
-        }
+        },
+        TOGGLE_FAVCHECK(state, id) {
+            const index = state.favoriteList.findIndex(item => item.id === id)
+            if (index !== -1) {
+                state.favoriteList[index].checked = !state.favoriteList[index].checked
+                saveFavorites(state.favoriteList)
+            }
+        },
+        CHECK_FAVALL(state, checked) {
+            Object.values(state.favoriteList).forEach(item => {
+                item.checked = checked
+            })
+            saveFavorites(state.favoriteList)
+        },
     },
     state: {
         cartList: loadCart(),        // 购物车：以商品 id 为键的对象
@@ -308,6 +328,9 @@ export default createStore({
             }
             return newOrder
         },
+        removeOrder({ commit }, orderId) {
+            commit('REMOVE_ORDER', orderId)
+        },
         // 更新订单状态
         updateOrderStatus({ commit }, payload) {
             commit('UPDATE_ORDER_STATUS', payload)
@@ -358,10 +381,15 @@ export default createStore({
             }, 0)
         },
         // 已勾选商品的总件数
+        //购物车
         checkedCount: (state) => {
             return Object.values(state.cartList).reduce((count, item) => {
                 return count + (item.checked ? item.count : 0)
             }, 0)
+        },
+        //收藏
+        checkedFavCount: (state) => {
+            return state.favoriteList.filter(item => item.checked).length
         },
         // 购物车商品总件数（用于底部 Tab 角标）
         totalNum: (state) => {

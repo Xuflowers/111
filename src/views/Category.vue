@@ -95,7 +95,7 @@ const categories = [
   {
     name: '生鲜',
     products: [
-      { id: 100, name: '澳洲进口牛奶',desc: '澳洲直采，醇香浓郁', price: 1290, images: productImages[100], tag:true},
+      { id: 100, name: '澳洲进口牛奶',desc: '澳洲直采，醇香浓郁', price: 1290, image: productImages[100], tag:true},
       { id: 101, name: '进口牛油果', desc: '新鲜采摘', price: 2990, image: productImages[101], tag:true },
       { id: 102, name: '泰国金枕榴莲', desc: '果肉饱满', price: 5990, image: productImages[102], tag:true},
       { id: 103, name: '智利车厘子', desc: '颗颗饱满，脆甜多汁', price: 8990, image: productImages[103], tag:false },

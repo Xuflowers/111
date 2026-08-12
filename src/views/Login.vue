@@ -51,7 +51,7 @@ const handleLogin = () => {
   if (user) {
     // 登录成功
     localStorage.setItem('user-token', 'fake-token')
-    localStorage.setItem('user-info', JSON.stringify({ name: user.username }))
+    localStorage.setItem('user-info', JSON.stringify({ name: user.username, avatar: user.avatar}))
     Toast.success('登录成功')
     router.push('/user')
   } else {

@@ -3,19 +3,19 @@
     <van-nav-bar title="我的订单" left-arrow @click-left="goUser" />
     <van-tabs v-model:active="activeTab" @change="onTabChange">
       <van-tab title="全部" name="all">
-        <OrderList :orders="allOrders" @pay="handlePay" @confirm="handleConfirm" @review="handleReview" @apply="handleApply" @cancel="handleCancelRefund" @completed="handleViewDetail"/>
+        <OrderList :orders="allOrders" @pay="handlePay" @cancelOrder="handleCancelOrder" @cancelPay="handleCancel" @confirm="handleConfirm" @review="handleReview" @apply="handleApply" @cancel="handleCancelRefund" @completed="handleViewDetail"/>
       </van-tab>
       <van-tab title="待付款" name="pending_payment">
-        <OrderList :orders="pendingPaymentOrders" @pay="handlePay" @confirm="handleConfirm" @review="handleReview" @apply="handleApply" @cancel="handleCancelRefund" @completed="handleViewDetail"/>
+        <OrderList :orders="pendingPaymentOrders" @pay="handlePay" @cancelOrder="handleCancelOrder" @cancelPay="handleCancel" @confirm="handleConfirm" @review="handleReview" @apply="handleApply" @cancel="handleCancelRefund" @completed="handleViewDetail"/>
       </van-tab>
       <van-tab title="待收货" name="pending_receipt">
-        <OrderList :orders="pendingReceiptOrders" @pay="handlePay" @confirm="handleConfirm" @review="handleReview" @apply="handleApply" @cancel="handleCancelRefund" @completed="handleViewDetail"/>
+        <OrderList :orders="pendingReceiptOrders" @pay="handlePay" @cancelOrder="handleCancelOrder" @cancelPay="handleCancel" @confirm="handleConfirm" @review="handleReview" @apply="handleApply" @cancel="handleCancelRefund" @completed="handleViewDetail"/>
       </van-tab>
       <van-tab title="待评价" name="review">
-        <OrderList :orders="reviewOrders" @pay="handlePay" @confirm="handleConfirm" @review="handleReview" @apply="handleApply" @cancel="handleCancelRefund" @completed="handleViewDetail"/>
+        <OrderList :orders="reviewOrders" @pay="handlePay" @cancelOrder="handleCancelOrder" @cancelPay="handleCancel" @confirm="handleConfirm" @review="handleReview" @apply="handleApply" @cancel="handleCancelRefund" @completed="handleViewDetail"/>
       </van-tab>
       <van-tab title="退货/售后" name="refund">
-        <OrderList :orders="refundOrders" @pay="handlePay" @confirm="handleConfirm" @review="handleReview" @apply="handleApply" @cancel="handleCancelRefund" @completed="handleViewDetail"/>
+        <OrderList :orders="refundOrders" @pay="handlePay" @cancelOrder="handleCancelOrder" @cancelPay="handleCancel" @confirm="handleConfirm" @review="handleReview" @apply="handleApply" @cancel="handleCancelRefund" @completed="handleViewDetail"/>
       </van-tab>
     </van-tabs>
     
@@ -33,7 +33,7 @@
 import { computed, ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useStore } from 'vuex'
-import { Toast } from 'vant'
+import { Toast, Dialog } from 'vant'
 import OrderList from '@/components/OrderList.vue'
 import RefundDialog from '@/components/RefundDialog.vue'
 
@@ -69,6 +69,16 @@ const handlePay = (order) => {
     extra: { payTime: new Date().toISOString() }
   })
   Toast('支付成功，商品将尽快发货')
+}
+
+const handleCancelOrder = (order) => {
+  Dialog.confirm({
+    title: '确认取消',
+    message: '确定要取消该订单吗？'
+  }).then(() => {
+    store.dispatch('removeOrder', order.id)
+    Toast.success('订单已取消')
+  }).catch(() => {})
 }
 
 // 确认收货：将订单状态从"待收货"改为"待评价"

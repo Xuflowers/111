@@ -45,6 +45,16 @@
             <van-button size="small" :type="getActionType(order.status)" @click="handleOrderAction(order)">
               {{ getActionText(order.status) }}
             </van-button>
+            <!-- 取消订单按钮：仅待付款状态时显示 -->
+            <van-button
+                v-if="order.status === 'pending_payment'"
+                size="small"
+                type="default"
+                plain
+                @click="cancelOrder(order)"
+            >
+              取消订单
+            </van-button>
             <!-- 申请售后按钮：非待付款且非售后状态时显示 -->
             <van-button
                 v-if="order.status !== 'pending_payment' && order.status !== 'refund'"
@@ -108,8 +118,8 @@ const getProductImage = (product) => {
   return productImageMap[product.id] || DEFAULT_IMAGE
 }
 
-// 与父组件通信：分别对应支付、确认收货、评价、申请售后、取消售后、查看详情
-const emit = defineEmits(['pay', 'confirm', 'review', 'apply', 'cancel', 'completed'])
+// 与父组件通信：分别对应支付、取消订单、确认收货、评价、申请售后、取消售后、查看详情
+const emit = defineEmits(['pay', 'cancelOrder', 'confirm', 'review', 'apply', 'cancel', 'completed'])
 
 // 订单状态 → 中文文案
 const statusTextMap = {
@@ -154,6 +164,11 @@ const handleOrderAction = (order) => {
   else if (status === 'review') emit('review', order)
   else if (status === 'refund') emit('apply', order)
   else if (status === 'completed') emit('completed',order)
+}
+
+// 取消订单（待付款时）
+const cancelOrder = (order) => {
+  emit('cancelOrder', order)
 }
 
 // 申请售后

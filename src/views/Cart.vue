@@ -87,7 +87,7 @@ const router = useRouter()
 
 // ---------- 商品图片映射表（用于历史购物车数据缺少 image 字段时的回退）----------
 const productImageMap = {
-  100: 'https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=fresh%20milk%20carton%20dairy%20product%20white%20background&image_size=square',
+  100: 'https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=fresh%20milk%20carton%20white%20background&image_size=square',
   101: 'https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=fresh%20avocado%20fruit%20on%20white%20background&image_size=square',
   102: 'https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=durian%20fruit%20with%20thorn%20shell&image_size=square',
   103: 'https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=red%20cherries%20with%20green%20stem&image_size=square',
@@ -281,7 +281,6 @@ const handleDelete = (id) => {
       classifyCoupons()
       Toast.success('兑换成功')
     }
-
     const onSubmit = async () => {
       if (checkedCount.value === 0) {
         Toast('请选择要结算的商品')
@@ -293,6 +292,21 @@ const handleDelete = (id) => {
           discount: discountPrice.value,
           couponName: selectedCoupon.value?.name || ''
         })
+        const usedCoupon = selectedCoupon.value
+        if (usedCoupon){
+          const removeCouponFrom = (arr) => {
+            const idx = arr.findIndex(c => c.name === usedCoupon.name && c.value === usedCoupon.value)
+            if (idx !==  -1){
+              arr.splice(idx,1)
+            }
+          }
+          removeCouponFrom(coupons.value)
+          removeCouponFrom(disabledCoupons.value)
+          localStorage.setItem('coupon-list',JSON.stringify(coupons.value))
+          chosenCoupon.value = -1
+          saveChosenCoupon(-1)
+          classifyCoupons()
+        }
         Toast.success({
           message:'订单创建成功',
           forbidClick:true,
@@ -305,7 +319,7 @@ const handleDelete = (id) => {
         },1500)
         setTimeout(()=>{
           router.push('/orders?status=pending-payment')
-        },3000)
+        },2000)
       } catch (error) {
         Toast(error.message)
       }
@@ -349,4 +363,5 @@ const handleDelete = (id) => {
   width: 100%;
   padding: 4px 16px 0;
 }
+
 </style>
