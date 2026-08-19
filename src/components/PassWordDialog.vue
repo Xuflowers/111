@@ -108,7 +108,7 @@ const verifyPassword = () =>{
 }
 .password-amount{
   text-align: center;
-  padding: 40px 20px;
+  padding: 5% 20px;
   font-size: 36px;
 }
 .password-title{
