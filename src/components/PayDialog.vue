@@ -51,11 +51,11 @@
         >订单已过期</van-button>
       </div>
     </div>
+    <PassWordDialog v-model:visible="showPassWordDialog"
+                    :amount="order.totalAmount"
+                    @verifySuccess="handleVerifySuccess"
+    ></PassWordDialog>
   </van-popup>
-<PassWordDialog v-model:visible="showPassWordDialog"
-           :amount="order.totalAmount"
-           @verifySuccess="handleVerifySuccess"
-></PassWordDialog>
 </template>
 
 <script setup>

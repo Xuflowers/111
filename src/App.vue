@@ -46,7 +46,7 @@ onBeforeUnmount(() =>{
 .van-nav-bar,
 .van-nav-popup,
 .van-action-bar,
-.van-popup{
+.van-popup:not(.van-number-keyboard){
   max-width: 375px !important;
   left: 50% !important;
   right: auto !important;

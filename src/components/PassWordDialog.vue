@@ -4,7 +4,8 @@
       @update:show="$emit('update:visible',$event)"
       position="bottom"
       round
-      :style="{height:'60%'}"
+      :style="{height:'100%'}"
+      :z-index="2001"
   >
     <div class="password-dialog">
       <div class="password-header">
@@ -16,11 +17,12 @@
           :value="password"
           :length="6"
           :focused="showKeyboard"
-          @focus="showKeyboard"
+          @focus="showKeyboard=true"
       />
       <van-number-keyboard
           v-model="password"
           :show="showKeyboard"
+          :z-index="3000"
           :maxlength="6"
           @blur="showKeyboard = false"
       />
@@ -32,45 +34,57 @@
 import {ref, watch} from "vue";
 import {Toast} from "vant";
 
-const showPassword = ref(false)
-const paying = ref(false)
-const payType = ref('')
-
 const props = defineProps({
   visible: Boolean,
   amount: String,
-  order: String
+  order: {type: Object, default:() => ({})}
 })
+
+const emit = defineEmits(['update:visible', 'verifySuccess'])
 
 const password = ref('')
 const showKeyboard = ref(false)
+const verifying = ref(false)
+const retryCount = ref(0)
 const close = () => emit('update:visible',false)
+
+// 监听弹窗显隐：打开时延迟显示键盘（等过渡动画完成）
+watch(() => props.visible, (newVal) => {
+  if (newVal) {
+    setTimeout(() => {
+      showKeyboard.value = true
+    }, 300)
+  } else {
+    showKeyboard.value = false
+    password.value = ''
+    retryCount.value = 0
+    verifying.value = false
+  }
+})
+
 watch(password, (newVal)=> {
-  if (newVal.length === 6){
+  if (newVal.length === 6 && !verifying.value){
+    verifying.value = true
     verifyPassword()
   }
 })
 
 const verifyPassword = () =>{
-  paying.value = true
   setTimeout(() => {
-    paying.value = false
     if(password.value === '123456'){
       Toast.success("支付成功")
-      emit('paySuccess',{
-        orderId: props.order.id,
-        payType:payType.value
+      emit('verifySuccess',{
+        orderId: props.order.id
       })
-      showPassword.value = false
       password.value = ''
       close()
     }else{
       Toast.fail('密码错误，请重试')
-      password.value=""
+      password.value = ''
+      verifying.value = false
     }
-  },1000)
+  },500)
 }
-const emit = defineEmits(['update:visible', 'verifySuccess'])
 
 </script>
 
@@ -84,7 +98,6 @@ const emit = defineEmits(['update:visible', 'verifySuccess'])
 }
 .password-dialog :deep(.van-password-input__item){
   border: 2px solid #dcdee0;
-  width: 60px;
 }
 .password-header{
   display: flex;
