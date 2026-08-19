@@ -91,6 +91,10 @@ const verifyPassword = () =>{
 <style scoped>
 .password-dialog{
   min-width: 200px;
+  min-height: 100%;
+  background-color: #fff;
+  display: flex;
+  flex-direction: column;
 }
 .password-dialog :deep(.van-password-input){
   margin: 32px auto;
