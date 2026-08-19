@@ -59,7 +59,7 @@
 </template>
 
 <script setup>
-import {computed, ref} from "vue";
+import {computed, ref, watch} from "vue";
 import {Toast} from "vant";
 import {useStore} from "vuex";
 import PassWordDialog from "@/components/PassWordDialog.vue";
@@ -72,8 +72,16 @@ const props = defineProps({
 const emit = defineEmits(['update:visible', 'paySuccess'])
 
 const close = () => {
+  showPassWordDialog.value = false
+  payType.value = ''
   emit('update:visible', false)
 }
+watch(() => props.visible,(newVal) =>{
+  if (!newVal){
+    showPassWordDialog.value = false
+    payType.value=""
+  }
+})
 const payType = ref('')
 const payOptions = [
   { value: 'shop-money',label:'商城余额支付',icon:'balance-o',color:'#323030'},
