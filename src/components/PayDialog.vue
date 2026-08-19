@@ -4,7 +4,7 @@
     @update:show="$emit('update:visible', $event)"
     position="bottom"
     round
-    :style="{ height: '60%' }"
+    :style="{ height: '80%' }"
   >
     <div class="pay-dialog">
       <div class="dialog-header">
