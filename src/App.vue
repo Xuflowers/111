@@ -5,11 +5,27 @@
   </div>
 </template>
 
-<script>
+<script setup>
 // 应用根组件：仅承担路由出口与全局容器样式职责
-export default {
-  name: 'App'
-}
+
+import {onMounted, onBeforeUnmount} from "vue";
+import { useStore } from "vuex";
+const store = useStore()
+let expirePollingTimer = null
+
+onMounted(() =>{
+  store.dispatch('restoreOrderTimer')
+  store.dispatch('checkExpireOrders')
+  expirePollingTimer = setInterval(() =>{
+    store.dispatch('checkExpireOrders')},10000)
+  })
+
+onBeforeUnmount(() =>{
+  if (expirePollingTimer){
+    clearInterval(expirePollingTimer)
+    expirePollingTimer = null
+  }
+})
 </script>
 
 <style>
@@ -36,6 +52,15 @@ export default {
   right: auto !important;
   transform: translateX(-50%) !important;
   width: 100% !important;
+}
+
+/*
+ * 居中弹层位置覆盖：
+ * 将 translateX(-50%) 升级为 translate(-50%, -50%)，
+ * 使 top 百分比基于容器高度定位，实现容器的相对百分比位置
+ */
+.van-popup--center {
+  transform: translate(-50%, -50%) !important;
 }
 
 /* Toast 样式：限制宽度不超出屏幕 */

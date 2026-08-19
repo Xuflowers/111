@@ -18,10 +18,10 @@
 
     <!-- 功能按钮区 (宫格) -->
     <van-grid clickable :border="false" column-num="4" class="func-grid">
-      <van-grid-item icon="https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=fresh%20fruits%20and%20vegetables%20basket&image_size=square" text="生鲜" @click="goToCategory(0)" />
-      <van-grid-item icon="https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=snack%20food%20variety%20chips%20chocolate&image_size=square" text="零食" @click="goToCategory(1)" />
-      <van-grid-item icon="https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=household%20items%20daily%20necessities&image_size=square" text="百货" @click="goToCategory(2)" />
-      <van-grid-item icon="https://trae-api-cn.mchost.guru/api/ide/v1/text_to_image?prompt=beer%20wine%20alcoholic%20beverages&image_size=square" text="酒水" @click="goToCategory(3)" />
+      <van-grid-item icon="../src/assets/生鲜.png" text="生鲜" @click="goToCategory(0)" />
+      <van-grid-item icon="../src/assets/零食.png" text="零食" @click="goToCategory(1)" />
+      <van-grid-item icon="../src/assets/百货.png" text="百货" @click="goToCategory(2)" />
+      <van-grid-item icon="../src/assets/酒水.png" text="酒水" @click="goToCategory(3)" />
     </van-grid>
 
     <!-- 商品信息展示区 -->

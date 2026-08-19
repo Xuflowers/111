@@ -22,14 +22,17 @@
             type="textarea"
             placeholder="请填写您遇到的问题"
             rows="6"/>
-        <van-button type="primary" block @click="submitFeedBack">提交</van-button>
-        <van-button type="default" block @click="showFeedBack=false">取消</van-button>
+        <div class="button-group">
+          <van-button type="default" block @click="showFeedBack=false">取消</van-button>
+          <van-button type="primary" block @click="submitFeedBack">提交</van-button>
+        </div>
       </div>
     </van-popup>
     <van-popup
         v-model:show="showAboutUs"
-        position="bottom"
-        :style="{height:'100%'}"
+        position="center"
+        class="AboutUs-popup"
+        :style="{height:'450px'}"
         duration="0.5"
         round
         closeable>
@@ -102,26 +105,28 @@ const showAboutUs =ref(false)
 .AboutUs{
   width: 80%;
   margin: 0 auto;
-  margin-top: 60px;
+  margin-top: 40px;
   padding: 20px;
   text-align: center;
   background-color: #e5e5e6;
   border-radius: 5%;
 }
-
-/* ---------- 意见反馈弹窗样式 ---------- */
-/* 控制 popup 外层：宽度、圆角、位置 */
-/* 注意：van-popup 会 teleport 到 body，不能加 scoped，否则样式不生效 */
+.AboutUs-popup{
+  width: 60% !important;
+  max-width: 320px !important;
+  top: 45% !important;
+}
 .feedback-popup {
-  width: 90% !important;             /* 弹窗宽度 */
-  border-radius: 16px !important;    /* 自定义圆角 */
-  overflow: hidden;                  /* 内容不超出圆角 */
-  margin-top: -30%;
+  width: 60% !important;
+  max-width: 320px !important;
+  border-radius: 16px;
+  overflow: hidden;
+  top: 45% !important;
 }
 
 /* 控制弹窗内部内容：内边距、标题、按钮间距 */
 .feedback {
-  padding: 20px 20px;
+  padding: 1px 10px;
 }
 .feedback h3 {
   text-align: center;
@@ -133,8 +138,13 @@ const showAboutUs =ref(false)
   border-radius: 16px;
   padding: 10px;
 }
+.feedback .button-group{
+  width: 100%;
+  display: inline-flex;
+}
 .feedback .van-button {
-  margin-top: 12px;
+  margin: 12px;
   border-radius: 8px;
+  width: 100%;
 }
 </style>

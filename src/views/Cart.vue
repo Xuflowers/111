@@ -34,6 +34,7 @@
           </template>
           <template #footer>
             <van-button
+                class="delete"
                 size="mini"
                 type="danger"
                 @click="handleDelete(item.id)"
@@ -287,17 +288,18 @@ const handleDelete = (id) => {
         return
       }
       try {
-        await store.dispatch('createOrder', {
+        const newOrder =await store.dispatch('createOrder', {
           remark: '来自购物车的订单',
           discount: discountPrice.value,
           couponName: selectedCoupon.value?.name || ''
         })
         const usedCoupon = selectedCoupon.value
+        store.dispatch('startOrderTimer',{orderId:newOrder.id,totalSeconds:900})
         if (usedCoupon){
           const removeCouponFrom = (arr) => {
-            const idx = arr.findIndex(c => c.name === usedCoupon.name && c.value === usedCoupon.value)
-            if (idx !==  -1){
-              arr.splice(idx,1)
+          const idx = arr.findIndex(c => c.name === usedCoupon.name && c.value === usedCoupon.value)
+          if (idx !==  -1){
+            arr.splice(idx,1)
             }
           }
           removeCouponFrom(coupons.value)
@@ -319,7 +321,7 @@ const handleDelete = (id) => {
         },1500)
         setTimeout(()=>{
           router.push('/orders?status=pending-payment')
-        },2000)
+        },2500)
       } catch (error) {
         Toast(error.message)
       }
@@ -345,6 +347,12 @@ const handleDelete = (id) => {
 .cart-card {
   flex: 1;
   margin-left: 10px;
+}
+
+.delete{
+  margin-top: 4px;
+  margin-right: 20px;
+  width: 40px;
 }
 
 :deep(.van-submit-bar) {

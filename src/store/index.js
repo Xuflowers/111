@@ -1,4 +1,4 @@
-import index, { createStore } from 'vuex'
+import { createStore } from 'vuex'
 
 // 购物车持久化：从 localStorage 读取已保存的购物车数据
 const loadCart = () => {
@@ -148,12 +148,16 @@ export default createStore({
             state.orderList.unshift(order)
             saveOrders(state.orderList)
         },
-        // 更新订单状态：status 为新状态，extra 用于附加字段
+        // 更新订单状态：status 为新状态，extra 用于附加字段（合并到 order.extra 中）
         UPDATE_ORDER_STATUS(state, { orderId, status, extra = {} }) {
             const index = state.orderList.findIndex(o => o.id == orderId)
             if (index !== -1) {
                 state.orderList[index].status = status
-                Object.assign(state.orderList[index], extra)
+                // 确保 order.extra 存在，再将 extra 的字段合并到 order.extra 中
+                if (!state.orderList[index].extra) {
+                    state.orderList[index].extra = {}
+                }
+                Object.assign(state.orderList[index].extra, extra)
                 state.orderList = [...state.orderList]
                 saveOrders(state.orderList)
             }
@@ -277,6 +281,25 @@ export default createStore({
             })
             saveFavorites(state.favoriteList)
         },
+        // ----------------- 计时 mutations -----------------
+        SET_REMAINING(state,{orderId, remaining}){
+            if(!state.timers[orderId]){
+                state.timers[orderId] = {}
+                }
+            state.timers[orderId].remaining = remaining
+        },
+        SET_TIMERS(state, { orderId, timers }){
+            if(!state.timers[orderId]) return
+            state.timers[orderId].timers = timers
+        },
+        CLEAR_TIMERS(state, orderId){
+            if (state.timers[orderId] && state.timers[orderId].timers){
+                clearInterval(state.timers[orderId].timers)
+                state.timers[orderId].timers = null
+            }
+            delete  state.timers[orderId]
+        },
+        REMOVE_EXPIRED(state){}
     },
     state: {
         cartList: loadCart(),        // 购物车：以商品 id 为键的对象
@@ -285,6 +308,7 @@ export default createStore({
         accountList: loadAccount(),  // 账户列表：数组
         browseHistory: loadHistory(),
         favoriteList: loadFavorites(),
+        timers:{},
         refundRecords: []            // 售后记录：仅在内存中维护
     },
     actions: {
@@ -315,6 +339,7 @@ export default createStore({
                 id: orderId,
                 status: 'pending_payment',
                 createTime: new Date().toISOString(),
+                expireTime: Date.now() + 15*60*1000,
                 totalAmount: finalAmount.toFixed(2),
                 originalAmount: totalAmount.toFixed(2),
                 discount: (discount / 100).toFixed(2),
@@ -368,6 +393,72 @@ export default createStore({
         // 更新账户信息（密码、头像等）
         updateAccountInfo({ commit }, payload) {
             commit('UPDATE_ACCOUNT_INFO', payload)
+        },
+       checkExpireOrders({ commit, state }){
+            const now = Date.now()
+            state.orderList.forEach(order => {
+                if (order.status === 'pending_payment' && order.expireTime && now >= order.expireTime){
+                    commit('UPDATE_ORDER_STATUS',{
+                        orderId:order.id,
+                        status:'overtime',
+                        extra:{ overtimeReason: '超出支付时间，订单已取消' }
+                    })
+                }
+            })
+        },
+        startOrderTimer({ commit, dispatch, state},{ orderId, totalSeconds = 600}){
+            if(state.timers[orderId] && state.timers[orderId].timers){
+                clearInterval(state.timers[orderId].timers)
+            }
+            const now = Date.now()
+            let storedExpireAt = localStorage.getItem(`order_timer_${orderId}`)
+            let expireAt = storedExpireAt ? parseInt(storedExpireAt, 10) : now + totalSeconds * 1000
+            if (!storedExpireAt){
+                localStorage.setItem(`order_timer_${orderId}`,String(expireAt))
+            }
+            let remaining = Math.max(0,Math.floor((expireAt - now)/1000))
+            commit('SET_REMAINING',{ orderId, remaining })
+            if( remaining <= 0){
+                dispatch("cancelOrderTimeout",orderId)
+                return
+            }
+            const timers = setInterval(()=>{
+                const now2 = Date.now()
+                let newRemaining = Math.max(0, Math.floor((expireAt - now2)/1000))
+                commit("SET_REMAINING",{orderId,remaining: newRemaining })
+                if(newRemaining <= 0){
+                    clearInterval(timers)
+                    commit('CLEAR_TIMERS',orderId)
+                    localStorage.removeItem(`order_timer_${orderId}`)
+                    dispatch('cancelOrderTimeout',orderId)
+                }
+            },1000)
+            commit("SET_TIMERS",{orderId, timers})
+        },
+        stopOrderTimer({commit, state},orderId){
+            if(state.timers[orderId] && state.timers[orderId].timers){
+                clearInterval(state.timers[orderId].timers)
+            }
+            commit('CLEAR_TIMERS',orderId)
+            localStorage.removeItem(`order_timer_${orderId}`)
+        },
+        cancelOrderTimeout({commit, rootState }, orderId){
+            commit('UPDATE_ORDER_STATUS',{
+                orderId,
+                status: 'overtime',
+                extra: { cancelReason:'支付超时'}
+            })
+            localStorage.removeItem(`order_timer_${orderId}`)
+            commit('CLEAR_TIMERS',orderId)
+        },
+        restoreOrderTimer({ dispatch,state }){
+            const keys = Object.keys(localStorage)
+            keys.filter(k => k.startsWith('order_timer_')).forEach(key => {
+                const  orderId = key.replace('order_timer_','')
+                if(!state.timers[orderId]){
+                    dispatch('startOrderTimer',{ orderId })
+                }
+            })
         }
     },
     getters: {
@@ -407,6 +498,10 @@ export default createStore({
         refundRecords: (state) => state.refundRecords,
         pendingRefundRecords: (state) => state.refundRecords.filter(r => r.status === 'pending'),
         isFavorite: (state) => (id) => state.favoriteList.some(p => p.id === id),
-        favoriteCount: (state) => state.favoriteList.length
+        favoriteCount: (state) => state.favoriteList.length,
+        // [计时器代码-暂时注释] getRemaining getter：state.timers 不在 store state 中，访问会报错
+        getRemaining:(state)=>(orderId)=>{
+            return state.timers[orderId] ? state.timers[orderId].remaining : null
+        }
     }
 })

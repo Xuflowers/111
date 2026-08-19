@@ -41,11 +41,11 @@
     </van-cell-group>
 
     <van-cell-group inset>
-      <van-cell title="支付方式" value="在线支付" />
+      <van-cell title="支付方式" value="在线支付" v-if="order.status === 'completed' || order.status === 'refund'"/>
     </van-cell-group>
 
     <van-cell-group inset>
-      <van-cell title="物流公司" value="顺丰速运" />
+      <van-cell title="物流公司" value="顺丰速运" v-if="order.status === 'completed' || order.status === 'refund'"/>
     </van-cell-group>
 
     <div class="bottom-actions">
@@ -109,6 +109,8 @@ const orderStatusText = computed(() => {
   if (status === 'review') return '待评价'
   if (status === 'refund') return '售后中'
   if (status === 'completed') return '已完成'
+  if (status === 'cancelled') return '已取消'
+  if (status === 'overtime') return '已超时'
   return '未知状态'
 })
 
@@ -116,6 +118,8 @@ const orderStatusClass = computed(() => {
   const status = order.value.status
   if (status === 'pending_payment') return 'status-pending'
   if (status === 'refund') return 'status-refund'
+  if (status === 'cancelled') return 'status-cancelled'
+  if (status === 'overtime') return 'status-overtime'
   return 'status-completed'
 })
 
@@ -125,6 +129,8 @@ const statusIcon = computed(() => {
   if (status === 'pending_receipt') return 'logistics'
   if (status === 'review') return 'edit'
   if (status === 'refund') return 'service-circle-o'
+  if (status === 'cancelled') return 'close'
+  if (status === 'overtime') return 'clock-o'
   return 'passed'
 })
 
@@ -189,6 +195,24 @@ const goBack = () => router.go(-1)
 }
 .status-completed {
   background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+  width: 80%;
+  max-width: 360px;
+  padding: 20px;
+  margin-left: 5%;
+  border-radius: 8px;
+  margin-top: 10px;
+}
+.status-cancelled {
+  background: linear-gradient(135deg, #f32d4f 0%, #ea9550 100%);
+  width: 80%;
+  max-width: 360px;
+  padding: 20px;
+  margin-left: 5%;
+  border-radius: 8px;
+  margin-top: 10px;
+}
+.status-overtime {
+  background: linear-gradient(135deg, #817e7e 0%, #cac9c9 100%);
   width: 80%;
   max-width: 360px;
   padding: 20px;

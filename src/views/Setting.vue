@@ -15,7 +15,7 @@
       round
       closeable
       duration="0.3"
-      :style="{ weight: '60%',maxWidth:'320px' }"
+      class="avatar-popup"
     >
       <div class="avatar-popup-content">
         <h3>更换头像</h3>
@@ -50,7 +50,7 @@
       round
       closeable
       duration="0.3"
-      :style="{ weight: '60%',maxWidth:'320px'}"
+      class="pwd-popup"
     >
       <div class="pwd-popup-content">
         <h3>修改密码</h3>
@@ -89,7 +89,7 @@
       closeable
       round
       duration="0.5"
-      :style="{ weight: '60%',maxWidth:'320px'}">
+      class="logout-popup">
       <div class="HandleLogout-popup">
         <h3>是否退出登录？</h3>
         <p>退出后需要重新登录使用</p>
@@ -305,5 +305,28 @@ const goBack = () => router.go(-1)
 .setting-page :deep(.logout-cell .van-cell__title) {
   color: #ee0a24;
   font-weight: 500;
+}
+</style>
+
+<style>
+/* 更换头像弹窗：宽度 60%，最大 320px，中心位于容器 45% 高度处 */
+.avatar-popup {
+  width: 60% !important;
+  max-width: 320px !important;
+  top: 45% !important;
+}
+
+/* 修改密码弹窗：宽度 60%，最大 320px，中心位于容器 45% 高度处 */
+.pwd-popup {
+  width: 60% !important;
+  max-width: 320px !important;
+  top: 45% !important;
+}
+
+/* 退出登录弹窗：宽度 60%，最大 320px，中心位于容器 50% 高度处 */
+.logout-popup {
+  width: 60% !important;
+  max-width: 320px !important;
+  top: 50% !important;
 }
 </style>

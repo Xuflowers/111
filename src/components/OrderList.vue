@@ -9,19 +9,51 @@
         <div class="order-header">
           <span class="order-no">订单号：{{ order.id }}</span>
           <span class="order-status" :class="getStatusClass(order.status)">{{ getStatusText(order.status) }}</span>
-        </div>
+          <div class="order-countDown"  v-if="order.status==='pending_payment' && getRemaining(order.id) !== null">
+            <span class="countdown">剩余{{ formattedCountdown(getRemaining(order.id)) }}</span>
+          </div>
+          </div>
         <!-- 商品列表 -->
         <div class="order-products">
-          <div v-for="product in order.products" :key="product.id" class="product-card">
-            <img :src="getProductImage(product)" class="product-thumb" />
-            <div class="product-info">
-              <div class="product-name">{{ product.name }}</div>
-              <div class="product-desc">单价：¥{{ (product.price / 100).toFixed(2) }}</div>
-              <div class="product-footer">
-                <span class="product-price">¥{{ (product.price / 100).toFixed(2) }}</span>
-                <span class="product-count">x{{ product.count }}</span>
+          <div class="products-card first-product" @click="toggleOrder(order.id)">
+            <div v-for="(product, index) in order.products" :key="product.id" class="product-card" v-show="index === 0 ">
+              <img :src="getProductImage(product)" class="product-thumb" />
+              <div class="product-info">
+                <div class="product-name">{{ product.name }}</div>
+                <div class="product-desc">单价：¥{{ (product.price / 100).toFixed(2) }}</div>
+                <div class="product-footer">
+                  <span class="product-price">¥{{ (product.price / 100).toFixed(2) }}</span>
+                  <span class="product-count">x{{ product.count }}</span>
+                </div>
               </div>
             </div>
+          </div>
+
+          <div class="products-card-others-product" @click="toggleOrder(order.id)" :class="{'is-collapsed': !expandedOrders.has(order.id)}" :ref="(el) => setCollapseRef(el, order.id)" :style="{ maxHeight: getCollapseHeight(order.id) }">
+            <div class="others-product">
+              <div v-for="product in order.products.slice(1)"
+                :key="product.id"
+                class="product-card"
+              >
+                <img :src="getProductImage(product)" class="product-thumb">
+                <div class="product-info">
+                  <div class="product-name">{{ product.name }}</div>
+                  <div class="product-desc">单价：¥{{ (product.price / 100).toFixed(2) }}</div>
+                  <div class="product-footer">
+                    <span class="product-price">¥{{ (product.price / 100).toFixed(2) }}</span>
+                    <span class="product-count">x{{ product.count }}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div v-if="!expandedOrders.has(order.id) && order.products.length > 1" class="collapse-mask"></div>
+            <span class="expand-hint" @click.stop="toggleOrder(order.id)">
+              <Transition name="hint-fade" mode="out-in">
+                <span :key="expandedOrders.has(order.id) ? 'collapse' : 'expand'">
+                  {{ expandedOrders.has(order.id) ? '收起▲' : `剩余${order.products.length - 1}件商品，点击展开▼` }}
+                </span>
+              </Transition>
+            </span>
           </div>
         </div>
 
@@ -49,7 +81,7 @@
             <van-button
                 v-if="order.status === 'pending_payment'"
                 size="small"
-                type="default"
+                type="warning"
                 plain
                 @click="cancelOrder(order)"
             >
@@ -57,7 +89,7 @@
             </van-button>
             <!-- 申请售后按钮：非待付款且非售后状态时显示 -->
             <van-button
-                v-if="order.status !== 'pending_payment' && order.status !== 'refund'"
+                v-if="order.status !== 'pending_payment' && order.status !== 'refund' && order.status !== 'overtime' && order.status !== 'cancelled'"
                 size="small"
                 type="warning"
                 plain
@@ -84,6 +116,9 @@
 
 <script setup>
 // 订单列表组件：可复用于"全部/待付款/待收货/待评价/售后"等不同 Tab
+import { ref, nextTick, watch } from 'vue'
+import { useStore } from "vuex";
+import store from "@/store/index.js";
 const props = defineProps({
   orders: Array,    // 当前 Tab 下要展示的订单数组
   type: String      // 订单类型（保留字段）
@@ -127,7 +162,9 @@ const statusTextMap = {
   pending_receipt: '待收货',
   review: '待评价',
   refund: '待处理',
-  completed: '已完成'
+  completed: '已完成',
+  overtime: '已过期',
+  cancelled:'已取消',
 }
 
 // 订单状态 → 主要按钮文案
@@ -136,7 +173,9 @@ const actionTextMap = {
   pending_receipt: '确认收货',
   review: '去评价',
   refund: '查看详情',
-  completed: '查看详情'
+  completed: '查看详情',
+  overtime:'查看详情',
+  cancelled:'查看详情'
 }
 
 // 售后原因 → 中文文案
@@ -164,6 +203,8 @@ const handleOrderAction = (order) => {
   else if (status === 'review') emit('review', order)
   else if (status === 'refund') emit('apply', order)
   else if (status === 'completed') emit('completed',order)
+  else if (status === 'overtime') emit('completed',order)
+  else if (status === 'cancelled') emit('completed',order)
 }
 
 // 取消订单（待付款时）
@@ -180,6 +221,59 @@ const applyRefund = (order) => {
 const cancelRefund = (order) => {
   emit('cancel', order)
 }
+//订单折叠
+const expandedOrders = ref(new Set())
+const collapseHeights = ref({})
+const collapseRefs = {}
+
+// 函数式 ref：为每个订单收集 DOM 元素引用
+const setCollapseRef = (el, orderId) => {
+  if (el) {
+    collapseRefs[orderId] = el
+  } else {
+    delete collapseRefs[orderId]
+  }
+}
+
+const getCollapseHeight = (orderId) => {
+  return collapseHeights.value[orderId] || '50px'
+}
+
+const updateCollapseHeight = async (orderId) => {
+  await nextTick()
+  const el = collapseRefs[orderId]
+  if (!el) return
+  if (expandedOrders.value.has(orderId)) {
+    collapseHeights.value[orderId] = el.scrollHeight + 'px'
+  } else {
+    collapseHeights.value[orderId] = '50px'
+  }
+}
+
+const toggleOrder = async (orderId) => {
+  const next = new Set(expandedOrders.value)
+  next.has(orderId) ? next.delete(orderId) : next.add(orderId)
+  expandedOrders.value = next
+  await updateCollapseHeight(orderId)
+}
+
+const getRemaining = (orderId) => {
+  return store.getters.getRemaining(orderId)
+}
+
+const  formattedCountdown = (seconds) => {
+  if(seconds === null || seconds === undefined) return ''
+  const m = Math.floor(seconds / 60)
+  const s = seconds % 60
+  return `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`
+}
+// 切换 Tab 时重置折叠状态和高度缓存
+watch(() => props.orders, () => {
+  expandedOrders.value = new Set()
+  collapseHeights.value = {}
+  Object.keys(collapseRefs).forEach(k => delete collapseRefs[k])
+})
+
 </script>
 
 <style scoped>
@@ -214,6 +308,9 @@ const cancelRefund = (order) => {
 .order-status.status-refund {
   color: #667eea;
 }
+.order-products .van-button{
+  width: 100%;
+}
 .product-card {
   display: flex;
   padding: 12px;
@@ -225,6 +322,7 @@ const cancelRefund = (order) => {
 }
 .product-card:last-child {
   border-bottom: none;
+  margin-bottom: 10px;
 }
 .product-thumb {
   width: 80px;
@@ -267,7 +365,7 @@ const cancelRefund = (order) => {
 }
 .refund-info {
   padding: 10px 12px;
-  background-color: #f7f8fa;
+  background-color: white;
   font-size: 13px;
 }
 .refund-info .label {
@@ -279,12 +377,24 @@ const cancelRefund = (order) => {
 .refund-desc {
   margin-top: 4px;
 }
+.order-countDown{
+  font-size: 10px;
+  color: #ee0a24;
+  margin-top: auto;
+}
+.order-status{
+  display: flex !important;
+  margin-left: 15% !important;
+}
 .order-footer {
   display: flex;
   justify-content: space-between;
   align-items: center;
   padding: 10px 12px;
   border-top: 1px solid #f5f5f5;
+}
+.order-footer .total{
+  font-size: 12px;
 }
 .total {
   font-size: 14px;
@@ -294,5 +404,54 @@ const cancelRefund = (order) => {
 .action-buttons {
   display: flex;
   gap: 8px;
+}
+.first-product{
+  cursor: pointer;
+}
+.products-card-others-product{
+  max-height: 2000px;
+  position: relative;
+  overflow: hidden;
+  transition: max-height 0.8s ease;
+}
+.products-card-others-product.is-collapsed{
+  max-height: 50px;
+}
+.collapse-mask{
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 60px;
+  background: linear-gradient(to bottom, transparent, rgb(255,255,255,0.9));
+  display:flex;
+  align-items: center;
+  justify-content: center;
+  padding-bottom: 120px;
+  pointer-events: none;
+}
+.expand-hint{
+  width: 160px;
+  position: absolute;
+  bottom: 0%;
+  left: 20%;
+  color: #666;
+  padding: 4px 20px;
+  font-size: 13px;
+  text-align: center;
+  pointer-events: auto;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.expand-hint:active{
+  opacity: 0.7;
+}
+.hint-fade-enter-active,
+.hint-fade-leave-active{
+  transition: opacity 0.5s ease;
+}
+.hint-fade-enter-from,
+.hint-fade-leave-to{
+  opacity: 0;
 }
 </style>
