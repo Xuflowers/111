@@ -36,9 +36,7 @@
 
     <RefundDialog
       v-model:visible="showRefundDialog"
-      :order-id="payingOrder?.id"
-      :pay-type="selectedPayType"
-      :amount="payingOrder?.totalAmount"
+      :order="currentOrder"
       @success="handleRefundSubmit"
     />
   </div>

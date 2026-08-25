@@ -59,7 +59,7 @@
 import { computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useStore } from 'vuex'
-import { NavBar, Cell, CellGroup, Button, Icon, Toast, Dialog } from 'vant'
+import { Toast, Dialog } from 'vant'
 
 const route = useRoute()
 const router = useRouter()

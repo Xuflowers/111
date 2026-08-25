@@ -92,14 +92,14 @@
 <script setup>
 // 售后申请弹层组件：用于填写售后类型、原因、问题描述并上传凭证
 import { ref, computed } from 'vue'
-import { Popup, Cell, CellGroup, Uploader, Icon, Button, Toast } from 'vant'
+import { Toast } from 'vant'
 
 const props = defineProps({
   visible: Boolean,   // 弹层显隐
   order: Object       // 当前申请售后的订单对象
 })
 
-const emit = defineEmits(['close', 'submit'])
+const emit = defineEmits(['update:visible', 'success'])
 
 // ---------- 商品图片映射表 ----------
 const productImageMap = {
@@ -154,9 +154,9 @@ const canSubmit = computed(() => {
   return selectedReason.value
 })
 
-// 关闭弹层
+// 关闭弹层：通过双向绑定关闭
 const close = () => {
-  emit('close')
+  emit('update:visible', false)
 }
 
 // 图片读取后的回调：将文件加入列表
@@ -171,7 +171,7 @@ const submit = () => {
     return
   }
 
-  emit('submit', {
+  emit('success', {
     refundType: refundType.value,
     reason: selectedReason.value,
     description: description.value.trim(),

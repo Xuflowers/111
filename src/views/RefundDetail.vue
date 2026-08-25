@@ -6,7 +6,7 @@
     <!-- 顶部状态展示 -->
     <div class="refund-status" :class="orderRefundStatus">
       <div class="status-icon">
-        <van-icon name="service-circle-o" size="48" />
+        <van-icon name="service-o" size="48" />
       </div>
       <div class="status-text">{{ refundStatusText }}</div>
     </div>
@@ -81,7 +81,7 @@
 import { computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useStore } from 'vuex'
-import {NavBar, Cell, CellGroup, Button, Icon, Toast, Dialog} from 'vant'
+import { Toast, Dialog } from 'vant'
 
 const route = useRoute()
 const router = useRouter()

@@ -53,7 +53,7 @@
   import { useRouter } from "vue-router";
   import { useStore } from "vuex";
   import { computed, ref} from "vue";
-  import {Toast, Checkbox, CheckboxGroup} from "vant";
+  import { Toast } from "vant";
 
   const router = useRouter();
   const store = useStore();

@@ -39,10 +39,7 @@
 <script setup>
 // 消息中心页：展示消息列表（店铺客服、群消息、订阅号、物流助手等）
 import { ref } from 'vue'
-import { useRouter } from 'vue-router'
 import AppTabBar from '@/components/AppTabBar.vue'
-
-const router = useRouter()
 
 // 模拟消息列表数据（店铺消息、订阅号、客服聊天等）
 const messageList = ref([
@@ -80,12 +77,8 @@ const messageList = ref([
   }
 ])
 
-// 点击消息跳转到具体的聊天/详情页面
-const goToChat = (msg) => {
-  // 这里可以跳转到一个具体的聊天详情页，例如 /chat/:id
-  console.log('准备查看消息：', msg.title)
-  // router.push(`/chat/${msg.id}`)
-}
+// 点击消息跳转到具体的聊天/详情页面（聊天功能待接入）
+const goToChat = () => {}
 </script>
 
 <style scoped>

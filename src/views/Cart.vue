@@ -76,7 +76,8 @@
           :coupons="coupons"
           :chosen-coupon="chosenCoupon"
           :disabled-coupons="disabledCoupons"
-          @change="onCouponChange"/>
+          @change="onCouponChange"
+          @exchange="onExchange"/>
     </van-popup>
     <AppTabBar />
   </div>
@@ -86,7 +87,7 @@
 import { computed, ref, watch, onMounted} from 'vue'
 import { useStore } from 'vuex'
 import { useRouter } from 'vue-router'
-import { Dialog, Toast, CouponList} from 'vant'
+import { Dialog, Toast } from 'vant'
 import AppTabBar from '@/components/AppTabBar.vue'
 
 const store = useStore()
@@ -250,6 +251,41 @@ const userCoupons = computed(() => store.state.userCoupons)
       saveChosenCoupon(index);
       showList.value = false;
     };
+
+// ---------- 兑换码兑换优惠券 ----------
+// 预置兑换码映射表：code → 优惠券模板（单位：分）
+const exchangeCodeMap = {
+  'NEW100': { name: '新用户满100减20', type: 'fixed', value: 2000, threshold: 10000, condition: '新用户专享' },
+  'VIP50':  { name: 'VIP满50减10',    type: 'fixed', value: 1000, threshold: 5000,  condition: 'VIP专享' },
+  'SAVE200':{ name: '满200减30',      type: 'fixed', value: 3000, threshold: 20000, condition: '全场通用' }
+}
+
+// 兑换码兑换：校验兑换码 → 生成用户券 → 入库 → 刷新列表
+const onExchange = (code) => {
+  if (!code) return
+  const template = exchangeCodeMap[String(code).trim().toUpperCase()]
+  if (!template) {
+    Toast.fail('兑换码无效')
+    return
+  }
+  const newCoupon = {
+    id: Date.now().toString(),
+    name: template.name,
+    type: template.type,
+    value: template.value,
+    threshold: template.threshold,
+    condition: template.condition,
+    available: 1,
+    reason: '兑换码兑换',
+    startAt: Math.floor(Date.now() / 1000),
+    endAt: Math.floor(Date.now() / 1000) + 30 * 86400,
+    valueDesc: (template.value / 100).toFixed(1),
+    unitDesc: '元'
+  }
+  store.commit('ADD_USER_COUPON', newCoupon)
+  Toast.success('兑换成功')
+  classifyCoupons()
+}
 const calcDiscountByType = (coupon, orderAmount) => {
   if (!coupon || orderAmount <= 0) return 0
   const type = coupon.type || 'fixed'
