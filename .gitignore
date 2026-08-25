@@ -40,3 +40,12 @@ Desktop.ini
 
 # Vite
 .vite/
+
+# Backup files
+.backup/
+.backup_*/
+*.backup
+
+# IDE - IntelliJ/WebStorm
+*.iml
+
