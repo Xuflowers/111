@@ -61,6 +61,8 @@ const handleLogin = () => {
       availablePoints: user.availablePoints ?? 0,
       pointsRecords: user.pointsRecords ?? []
     })
+    // 加载对应用户的券包（按用户隔离，替换旧残留数据）
+    store.commit('LOAD_USER_COUPONS', user.username)
     Toast.success('登录成功')
     router.push('/user')
   } else {
