@@ -29,33 +29,6 @@ onBeforeUnmount(() =>{
 </script>
 
 <style>
-/* 全局基础重置：移动端触摸优化 */
-* {
-  -webkit-tap-highlight-color: transparent;     /* 去除点击高亮（iOS/Android） */
-  -webkit-touch-callout: none;                   /* 禁止长按弹出菜单（iOS） */
-  box-sizing: border-box;
-}
-html, body {
-  margin: 0;
-  padding: 0;
-  /* 允许浏览器移除 300ms 点击延迟 */
-  touch-action: manipulation;
-  /* 防止移动端横屏缩放后布局错乱 */
-  -webkit-text-size-adjust: 100%;
-  overflow-x: hidden;
-}
-/* 输入框与按钮：放大点击区域，消除移动端点击死角 */
-input, button, [role="button"] {
-  touch-action: manipulation;
-  -webkit-user-select: text;       /* input 允许选择文本 */
-  user-select: text;
-}
-button, .van-button {
-  /* 消除原生 button 在移动端的默认样式干扰 */
-  -webkit-appearance: none;
-  appearance: none;
-}
-
 /* 全局容器：限制最大宽度为 375px（移动端设计稿宽度），居中显示 */
 #app {
   max-width: 375px;
