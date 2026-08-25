@@ -225,6 +225,15 @@ export default createStore({
         ADD_USER_COUPON(state,coupon){
             state.userCoupons.push(coupon)
             saveUserCoupons(state.userCoupons)
+            // 同步到 accountList 中当前登录用户的 coupons 字段
+            if (state.userInfo?.name) {
+                const acc = state.accountList.find(a => a.username === state.userInfo.name)
+                if (acc) {
+                    if (!acc.coupons) acc.coupons = []
+                    acc.coupons.push(coupon)
+                    saveAccount(state.accountList)
+                }
+            }
         },
         UPDATE_USER_COUPON(state,{couponId, updates}) {
             const index = state.userCoupons.findIndex(c => c.id === couponId)
@@ -289,13 +298,22 @@ export default createStore({
                     username: account.username,
                     password: account.password,
                     avatar: account.avatar || '',
+                    nickname: account.nickname || '用户123',
                     isVip: false,
                     levelPoints: 0,
                     availablePoints: 0,
-                    pointsRecords: []
+                    pointsRecords: [],
+                    coupons: account.coupons || []
                 })
                 saveAccount(state.accountList)
             }
+        },
+        // 登录时加载对应用户的券包到 userCoupons（按用户隔离）
+        LOAD_USER_COUPONS(state, username) {
+            const account = state.accountList.find(a => a.username === username)
+            const userCoupons = account?.coupons || []
+            state.userCoupons = userCoupons
+            saveUserCoupons(userCoupons)
         },
         // 更新账户信息（密码、头像等）
         UPDATE_ACCOUNT_INFO(state, { username, newData }) {

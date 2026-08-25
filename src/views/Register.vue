@@ -64,11 +64,29 @@ const handleRegister = () => {
     return
   }
 
-  // 添加账户到 store
+  // 新用户注册赠送券：满100减20，90天有效
+  const now = Math.floor(Date.now() / 1000)
+  const newUserCoupon = {
+    id: 'newuser-' + Date.now(),
+    name: '新用户满100减20',
+    type: 'fixed',
+    value: 2000,
+    threshold: 10000,
+    condition: '新用户专享',
+    available: 1,
+    reason: '新用户注册赠送',
+    startAt: now,
+    endAt: now + 90 * 86400,
+    valueDesc: '20.0',
+    unitDesc: '元'
+  }
+
+  // 添加账户到 store（携带新用户券）
   store.commit('ADD_TO_ACCOUNT', {
     username: form.username,
     password: form.password,
-    nickname: '用户123'
+    nickname: '用户123',
+    coupons: [newUserCoupon]
   })
 
   Toast.success('注册成功，请登录')
