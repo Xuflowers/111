@@ -190,12 +190,6 @@ onMounted(async () => {
 .sidebar {
   width: 100px;
   flex-shrink: 0;
-  height: 100%;
-  overflow: hidden;
-}
-.sidebar :deep(.van-sidebar) {
-  height: 100%;
-  overflow: hidden;
 }
 .main-content {
   flex: 1;

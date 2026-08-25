@@ -15,7 +15,7 @@
     <van-cell-group inset>
       <van-cell title="售后类型" :value="refundTypeText" />
       <van-cell title="申请时间" :value="formatTime(order.extra?.refundTime)" />
-      <van-cell title="售后原因" :value="order.extra?.refundReason || '用户申请售后'" />
+      <van-cell title="售后原因" :value="getReasonText(order.extra?.refundReason) || '用户申请售后'" />
       <van-cell title="订单编号" :value="order.id" label="点击复制" @click="copyOrderId" />
     </van-cell-group>
 
@@ -129,14 +129,22 @@ const firstProduct = computed(() => order.value.products?.[0] || {})
 // 总金额（字段是 totalAmount）
 const totalAmount = computed(() => order.value.totalAmount || '0.00')
 
-// 售后类型文字
+// 售后类型
 const refundTypeText = computed(() => {
   const type = order.value.extra?.refundType
   if (type === 'refund') return '仅退款'
   if (type === 'return') return '退货退款'
   return '退货退款'   // 默认
 })
-
+// 售后原因
+const reasonTextMap = {
+  quality:'商品质量问题',
+  wrong:'发错商品',
+  damage:'商品破损',
+  missing:'少发漏发',
+  other:'其他原因'
+}
+const getReasonText = (reason) => reasonTextMap[reason]
 // 售后状态样式类（与订单详情保持一致：refund→紫色卡片，completed→绿色卡片）
 const orderRefundStatus = computed(() => {
   return order.value.status === 'refund' ? 'status-refund' : 'status-completed'
