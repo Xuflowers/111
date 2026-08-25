@@ -84,7 +84,7 @@
 </template>
 
 <script setup>
-import {computed, ref, watch} from "vue";
+import {computed, ref, watch, nextTick} from "vue";
 import {Toast} from "vant";
 import {useStore} from "vuex";
 
@@ -139,6 +139,10 @@ const confirmPay = () =>{
     Toast.fail("请选择支付方式")
   }else{
     step.value = 'password'
+    // 切换到密码步骤后，等 DOM 更新完成再弹出键盘（自动聚焦）
+    nextTick(() => {
+      showKeyboard.value = true
+    })
   }
 }
 

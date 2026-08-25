@@ -158,7 +158,6 @@ const canSubmit = computed(() => {
 const close = () => {
   emit('update:visible', false)
 }
-
 // 图片读取后的回调：将文件加入列表
 const afterRead = (file) => {
   fileList.value.push(file)

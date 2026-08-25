@@ -1,6 +1,6 @@
 <template>
   <div class="orders-page">
-    <van-nav-bar title="我的订单" left-arrow @click-left="goUser" />
+    <van-nav-bar  title="我的订单" left-arrow @click-left="goUser" />
     <van-tabs v-model:active="activeTab" @change="onTabChange">
       <van-tab title="全部" name="all">
         <OrderList :orders="allOrders" @pay="handlePay" @cancelOrder="handleCancelOrder" @confirm="handleConfirm" @review="handleReview" @apply="handleApply" @cancel="handleCancelRefund" @completed="handleViewDetail"/>
@@ -58,6 +58,7 @@ import OrderList from '@/components/OrderList.vue'
 import RefundDialog from '@/components/RefundDialog.vue'
 import PayDialog from "@/components/PayDialog.vue";
 import EvaluateDialog from "@/components/EvaluateDialog.vue";
+import PassWordDialog from "@/components/PassWordDialog.vue";
 const store = useStore()
 const route = useRoute()
 const router = useRouter()
@@ -236,5 +237,8 @@ onMounted(() => {
 .orders-page {
   min-height: 100vh;
   background-color: #f7f8fa;
+}
+.order-header{
+  position: sticky;
 }
 </style>
