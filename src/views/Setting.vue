@@ -136,31 +136,56 @@ const oldPassword = ref('')
 const newPassword = ref('')
 const confirmPassword = ref('')
 
-// 文件读取回调：将图片转为 Base64 并预览
+// 文件读取回调：用 canvas 压缩图片为 Base64 预览，避免原始图片过大撑爆 localStorage
 const afterRead = (file) => {
   const rawFile = file.file || file
-  const reader = new FileReader()
-  reader.onload = (e) => {
-    previewAvatar.value = e.target.result
+  const url = URL.createObjectURL(rawFile)
+  const img = new Image()
+  img.onload = () => {
+    // 限制最大边 200px，等比缩放
+    const maxSize = 200
+    let { width, height } = img
+    if (width > height) {
+      if (width > maxSize) { height = height * maxSize / width; width = maxSize }
+    } else {
+      if (height > maxSize) { width = width * maxSize / height; height = maxSize }
+    }
+    const canvas = document.createElement('canvas')
+    canvas.width = width
+    canvas.height = height
+    const ctx = canvas.getContext('2d')
+    ctx.drawImage(img, 0, 0, width, height)
+    // 压缩为 JPEG 质量 0.8，Base64 体积从 MB 级降到 KB 级
+    previewAvatar.value = canvas.toDataURL('image/jpeg', 0.8)
+    URL.revokeObjectURL(url)
   }
-  reader.readAsDataURL(rawFile)
+  img.onerror = () => {
+    URL.revokeObjectURL(url)
+    Toast.fail('图片加载失败')
+  }
+  img.src = url
 }
 
 // 确认更换头像
 const confirmAvatar = () => {
   if (!previewAvatar.value || !userInfo.value) return
 
-  store.dispatch('updateAccountInfo', {
-    username: userInfo.value.name,
-    newData: { avatar: previewAvatar.value }
-  })
-
-  // 走 store mutation 同步更新 user-info（自动持久化 + 跨页面响应式）
-  store.commit('UPDATE_USER_INFO', { avatar: previewAvatar.value })
-
-  Toast.success('头像更换成功')
-  showChangeAvatar.value = false
-  previewAvatar.value = ''
+  try {
+    store.dispatch('updateAccountInfo', {
+      username: userInfo.value.name,
+      newData: { avatar: previewAvatar.value }
+    })
+    // 走 store mutation 同步更新 user-info（自动持久化 + 跨页面响应式）
+    store.commit('UPDATE_USER_INFO', { avatar: previewAvatar.value })
+    Toast.success('头像更换成功')
+    showChangeAvatar.value = false
+    previewAvatar.value = ''
+  } catch (e) {
+    // localStorage 超限或其他异常：回滚预览，提示用户
+    console.error('头像保存失败:', e)
+    Toast.fail('头像保存失败，请选择更小的图片')
+    previewAvatar.value = ''
+  }
 }
 
 // 确认修改密码
