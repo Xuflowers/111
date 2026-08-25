@@ -500,6 +500,7 @@ export default createStore({
             }))
             const newOrder = {
                 id: orderId,
+                username: state.userInfo?.name || '',
                 status: 'pending_payment',
                 createTime: new Date().toISOString(),
                 expireTime: Date.now() + 15*60*1000,
@@ -690,14 +691,16 @@ export default createStore({
         totalNum: (state) => {
             return Object.values(state.cartList).reduce((sum, item) => sum + item.count, 0)
         },
-        // 全部订单（按创建时间倒序）
-        allOrders: (state) => [...state.orderList].sort((a, b) => new Date(b.createTime) - new Date(a.createTime)),
+        // 全部订单（按创建时间倒序，仅当前登录用户的订单）
+        allOrders: (state) => [...state.orderList]
+            .filter(o => o.username === (state.userInfo?.name || ''))
+            .sort((a, b) => new Date(b.createTime) - new Date(a.createTime)),
         allProduct: (state) => [...state.favoriteList].sort((a, b) => new Date(b.createTime) - new Date(a.createTime)),
-        // 各状态订单筛选
-        pendingPaymentOrders: (state) => state.orderList.filter(o => o.status === 'pending_payment'),
-        pendingReceiptOrders: (state) => state.orderList.filter(o => o.status === 'pending_receipt'),
-        reviewOrders: (state) => state.orderList.filter(o => o.status === 'review'),
-        refundOrders: (state) => state.orderList.filter(o => o.status === 'refund'),
+        // 各状态订单筛选（仅当前登录用户）
+        pendingPaymentOrders: (state) => state.orderList.filter(o => o.username === (state.userInfo?.name || '') && o.status === 'pending_payment'),
+        pendingReceiptOrders: (state) => state.orderList.filter(o => o.username === (state.userInfo?.name || '') && o.status === 'pending_receipt'),
+        reviewOrders: (state) => state.orderList.filter(o => o.username === (state.userInfo?.name || '') && o.status === 'review'),
+        refundOrders: (state) => state.orderList.filter(o => o.username === (state.userInfo?.name || '') && o.status === 'refund'),
         // 售后记录
         refundRecords: (state) => state.refundRecords,
         pendingRefundRecords: (state) => state.refundRecords.filter(r => r.status === 'pending'),
