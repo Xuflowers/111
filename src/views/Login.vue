@@ -49,9 +49,17 @@ const handleLogin = () => {
   )
 
   if (user) {
-    // 登录成功
+    // 登录成功：通过 store mutation 写入用户信息，自动持久化到 localStorage
     localStorage.setItem('user-token', 'fake-token')
-    localStorage.setItem('user-info', JSON.stringify({ name: user.username, avatar: user.avatar}))
+    store.commit('SET_USER_INFO', {
+      name: user.username,
+      avatar: user.avatar,
+      points: user.points ?? 0,
+      isVip: user.isVip ?? false,
+      levelPoints: user.levelPoints ?? 0,
+      availablePoints: user.availablePoints ?? 0,
+      pointsRecords: user.pointsRecords ?? []
+    })
     Toast.success('登录成功')
     router.push('/user')
   } else {

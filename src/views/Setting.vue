@@ -114,7 +114,7 @@
 
 <script setup>
 // 设置页：提供更换头像、修改密码、退出登录功能
-import { ref, onMounted } from 'vue'
+import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useStore } from 'vuex'
 import { Toast } from 'vant'
@@ -122,7 +122,8 @@ import { Toast } from 'vant'
 const router = useRouter()
 const store = useStore()
 
-const userInfo = ref(null)
+// 当前登录用户信息：用 computed 关联 store，与其他页面共享并自动响应式更新
+const userInfo = computed(() => store.state.userInfo)
 const showChangeAvatar = ref(false)
 const showChangePassword = ref(false)
 const showHandleLogout = ref(false)
@@ -134,14 +135,6 @@ const previewAvatar = ref('')
 const oldPassword = ref('')
 const newPassword = ref('')
 const confirmPassword = ref('')
-
-// 挂载时从 localStorage 读取用户信息
-onMounted(() => {
-  const storedUser = localStorage.getItem('user-info')
-  if (storedUser) {
-    userInfo.value = JSON.parse(storedUser)
-  }
-})
 
 // 文件读取回调：将图片转为 Base64 并预览
 const afterRead = (file) => {
@@ -162,9 +155,8 @@ const confirmAvatar = () => {
     newData: { avatar: previewAvatar.value }
   })
 
-  // 同步更新 localStorage 中的 user-info
-  userInfo.value = { ...userInfo.value, avatar: previewAvatar.value }
-  localStorage.setItem('user-info', JSON.stringify(userInfo.value))
+  // 走 store mutation 同步更新 user-info（自动持久化 + 跨页面响应式）
+  store.commit('UPDATE_USER_INFO', { avatar: previewAvatar.value })
 
   Toast.success('头像更换成功')
   showChangeAvatar.value = false
@@ -225,7 +217,7 @@ const confirmPasswordChange = () => {
 // 退出登录
 const handleLogout = () => {
   localStorage.removeItem('user-token')
-  localStorage.removeItem('user-info')
+  store.commit('CLEAR_USER_INFO')
   Toast.success('已退出登录')
   setTimeout(() => {
   router.push('/login')

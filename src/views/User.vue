@@ -3,20 +3,34 @@
     <!-- 顶部用户信息区 -->
     <div class="user-header">
       <div v-if="userInfo" class="logged-in">
-        <div class="avatar">
-          <img v-if="userInfo.avatar" :src="userInfo.avatar" class="avatar-img" />
-          <span v-else>👤</span>
+        <div class="left">
+          <div class="avatar">
+            <img v-if="userInfo.avatar" :src="userInfo.avatar" class="avatar-img" />
+            <span v-else>👤</span>
+          </div>
+          <span class="viplevel">{{levelName}}</span>
         </div>
         <div class="info">
-          <div class="username">你好，{{ userInfo.name }}</div>
-          <button class="logout-btn" @click="handleLogout">退出登录</button>
+          <div class="center">
+            <div class="username"
+                 @click="showsetUserName=true"
+            >你好，{{ userInfo.name }}</div>
+            <span class="vip-point">积分：{{userInfo?.availablePoints || 0}}</span>
+          </div>
         </div>
+
+        <button class="logout-btn" @click="handleLogout">退出登录</button>
+
       </div>
       <div v-else class="not-logged-in" @click="goToLogin">
-        <div class="avatar">🔒</div>
+        <div class="left">
+          <div class="avatar">🔒</div>
+        </div>
         <div class="info">
-          <div class="username">未登录</div>
-          <div class="sub-text">点击前往登录</div>
+          <div class="center">
+            <div class="username">未登录</div>
+            <span class="vip-point">点击前往登录</span>
+          </div>
         </div>
       </div>
     </div>
@@ -51,6 +65,11 @@
 
     <!-- 常用功能列表 -->
     <div class="section">
+      <div class="list-item" @click="goToVip">
+        <span>💎 会员尊享</span>
+        <span class="vip-pointshow">可用积分：{{userInfo?.availablePoints || 0}}</span>
+        <span>></span>
+      </div>
       <div class="list-item" @click="goToAddress">
         <span>📍 收货地址</span>
         <span>></span>
@@ -68,7 +87,28 @@
         <span>></span>
       </div>
     </div>
-
+    <van-popup
+      v-model:show="showsetUserName"
+      position="center"
+      round
+      closeable
+      duration="0.3"
+      class="changeUserName"
+    >
+      <div class="changeUserName-popup">
+        <h3>填写您的名称</h3>
+        <van-field
+            class="names"
+            v-model="newUserName"
+            type="textarea"
+            label="新昵称"
+            placeholder="请输入新昵称"/>
+        <div class="popup-footer">
+          <van-button class="cancel" @click="showsetUserName=false">取消</van-button>
+          <van-button class="confirm"type="primary" @click="setUserName">确定</van-button>
+        </div>
+      </div>
+    </van-popup>
     <!-- 底部导航 -->
     <AppTabBar />
   </div>
@@ -76,33 +116,46 @@
 
 <script setup>
 // 个人中心页：展示用户信息、订单入口、收货地址/帮助等常用功能
-import { ref, onMounted } from 'vue'
+import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
-import AppTabBar from "@/components/AppTabBar.vue";
+import { useStore } from 'vuex'
 import {Toast} from "vant";
-
-const router = useRouter()
-const userInfo = ref(null)   // 当前登录用户信息（未登录时为 null）
-
-// 挂载时从 localStorage 读取用户信息
-onMounted(() => {
-  const storedUser = localStorage.getItem('user-info')
-  if (storedUser) {
-    userInfo.value = JSON.parse(storedUser)
-  }
+import AppTabBar from "@/components/AppTabBar.vue";
+import { getLevelByPoints } from '@/store/index.js'
+// 未登录或未注册会员时显示"还未注册"；已注册返回对应等级名
+const levelName = computed(() => {
+  if (!userInfo.value) return '未注册会员'
+  if (userInfo.value.isVip !== true) return '未注册会员'
+  return getLevelByPoints(userInfo.value.levelPoints ?? 0).name
 })
+const router = useRouter()
+const store = useStore()
+// 当前登录用户信息（未登录时为 null），用 computed 关联 store，
+// 任何页面 commit 修改后这里会自动响应式更新
+const userInfo = computed(() => store.state.userInfo)
+const showsetUserName = ref(false)
+const newUserName = ref('')
 
 // 跳转到登录页
 const goToLogin = () => {
   router.push('/login')
 }
-
+// 修改昵称：走 store mutation，保证跨页面同步并自动持久化
+const setUserName = () =>{
+  if (!newUserName.value.trim()){
+    Toast.fail('请输入正确的昵称')
+    return
+  }
+  store.commit('UPDATE_USER_INFO', { name: newUserName.value.trim() })
+  Toast.success('修改成功')
+  newUserName.value=''
+  showsetUserName.value=false
+}
 // 退出登录：清除本地存储并重置用户信息
 const handleLogout = () => {
   if (confirm('确定要退出登录吗？')) {
     localStorage.removeItem('user-token')
-    localStorage.removeItem('user-info')
-    userInfo.value = null
+    store.commit('CLEAR_USER_INFO')
     Toast.success('已退出登录')
   }
 }
@@ -131,6 +184,14 @@ const goToOrdersWithStatus = (status) => {
   else if (status === 'review') queryStatus = 'review'
   else if (status === 'refund') queryStatus = 'refund'
   router.push(`/orders?status=${queryStatus}`)
+}
+const goToVip = () => {
+  if (!userInfo.value) {
+    alert('请先登录')
+    router.push('/login')
+    return
+  }
+  router.push('/vip')
 }
 
 // 跳转到收货地址页
@@ -168,21 +229,11 @@ const  goToSetting = () => {
 </script>
 
 <style scoped>
-.user-container {
-  background-color: #f7f8fa;
-  min-height: 100vh;
-  padding-bottom: 50px;
-}
-.user-header {
-  background: linear-gradient(to right, #07c160, #06ad56);
-  padding: 40px 20px;
-  color: white;
-  display: flex;
-  align-items: center;
-}
 .avatar {
   font-size: 40px;
-  margin-right: 15px;
+  margin-bottom: 10px;
+  margin-right: 18px;
+  margin-left: 16px;
   background: rgba(255,255,255,0.2);
   width: 60px;
   height: 60px;
@@ -197,13 +248,57 @@ const  goToSetting = () => {
   height: 100%;
   object-fit: cover;
 }
+.viplevel{
+  font-size: 16px;
+}
+.user-container {
+  background-color: #f7f8fa;
+  min-height: 100vh;
+  padding-bottom: 50px;
+}
+.user-header {
+  background: linear-gradient(to right, #393838, rgba(8, 11, 12, 0.94));
+  padding: 40px 20px;
+  color: white;
+  display: flex;
+  border-radius: 16px;
+  align-items: center;
+}
+.center{
+  height: 90px;
+}
+.changeUserName-popup{
+  text-align: center;
+}
+.changeUserName-popup .popup-footer{
+  padding:10px;
+  display:inline-flex;
+  gap: 8px;
+  max-width: 340px;
+  width: 100%;
+}
+.changeUserName-popup  .popup-footer .van-button{
+  flex: 1;
+}
+.changeUserName-popup .names{
+  height: 50px;
+}
 .info {
   flex: 1;
 }
 .username {
   font-size: 20px;
   font-weight: bold;
-  margin-bottom: 5px;
+  padding-top: 20px;
+  margin-bottom: 24px;
+}
+.vip-point{
+  margin-left: 10px;
+  font-size: 14px;
+}
+.vip-pointshow{
+  margin-top: 4px;
+  font-size: 12px;
 }
 .sub-text {
   font-size: 14px;
@@ -219,9 +314,7 @@ const  goToSetting = () => {
   font-size: 12px;
   cursor: pointer;
 }
-.not-logged-in {
-  cursor: pointer;
-}
+
 .section {
   background: white;
   margin: 15px;
@@ -256,6 +349,34 @@ const  goToSetting = () => {
   font-size: 12px;
   color: #666;
 }
+.logged-in {
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+.not-logged-in {
+  display: flex;
+  align-items: center;
+  width: 100%
+}
+.logged-in .avatar {
+  flex-shrink: 0;
+}
+.not-logged-in .avatar {
+  flex-shrink: 0;
+}
+.logged-in .username {
+  flex-shrink: 0;
+  margin-left: 10px;
+}
+.not-logged-in .username {
+  flex-shrink: 0;
+  margin-left: 10px;
+}
+.logged-in .logout-btn {
+  margin-left: auto;
+  flex-shrink: 0;
+}
 .list-item {
   padding: 15px;
   display: flex;
@@ -266,5 +387,15 @@ const  goToSetting = () => {
 }
 .list-item:last-child {
   border-bottom: none;
+}
+.viplevel{
+  isplay: inline-block;
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #f7d774, #e0b94a);
+  color: #1c1c2b;
+  font-weight: 700;
+  letter-spacing: 2px;
+  margin-bottom: 32px;
 }
 </style>

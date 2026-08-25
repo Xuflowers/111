@@ -52,19 +52,15 @@
 <script setup>
 // 帮助页：仅展示入口，未实现具体跳转逻辑
 import { useRouter } from 'vue-router'
-import { onMounted, ref } from 'vue'
+import { ref, computed } from 'vue'
+import { useStore } from 'vuex'
 import { Toast } from 'vant'
 
 const router = useRouter()
-const userInfo = ref(null)
+const store = useStore()
+// 当前登录用户信息：用 computed 关联 store，与其他页面共享
+const userInfo = computed(() => store.state.userInfo)
 const goBack = () => router.go(-1)
-// 挂载时从 localStorage 读取用户信息
-onMounted(() => {
-  const storedUser = localStorage.getItem('user-info')
-  if (storedUser) {
-    userInfo.value = JSON.parse(storedUser)
-  }
-})
 
 // 跳转到联系客服页
 const goToHelpServer = () => {

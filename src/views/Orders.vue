@@ -22,16 +22,32 @@
     <PayDialog
       v-model:visible="showPayDialog"
       :order="payingOrder"
-      @paySuccess="handlePaySuccess"
+      @pay-success="handlePaySuccess"
+    />
+
+    <!-- 独立密码弹窗：关闭 PayDialog 后再单独打开 -->
+    <PassWordDialog
+      v-model:visible="showPassWordDialog"
+      :amount="payingOrder?.totalAmount"
+      :order="payingOrder"
+      :pay-method="selectedPayType"
+      @verifySuccess="handlePassWordSuccess"
     />
 
     <RefundDialog
-      :visible="showRefundDialog"
-      :order="currentOrder"
-      @close="showRefundDialog = false"
-      @submit="handleRefundSubmit"
+      v-model:visible="showRefundDialog"
+      :order-id="payingOrder?.id"
+      :pay-type="selectedPayType"
+      :amount="payingOrder?.totalAmount"
+      @success="handleRefundSubmit"
     />
   </div>
+
+  <EvaluateDialog
+      v-model:visible="showEvaluateDialog"
+      :order="currentReviewOrder"
+      @review-success="handleReviewSuccess"
+  />
 </template>
 
 <script setup>
@@ -43,7 +59,7 @@ import { Toast, Dialog } from 'vant'
 import OrderList from '@/components/OrderList.vue'
 import RefundDialog from '@/components/RefundDialog.vue'
 import PayDialog from "@/components/PayDialog.vue";
-
+import EvaluateDialog from "@/components/EvaluateDialog.vue";
 const store = useStore()
 const route = useRoute()
 const router = useRouter()
@@ -53,7 +69,11 @@ const showRefundDialog = ref(false)        // 是否显示售后申请弹层
 const currentOrder = ref({})               // 当前操作售后申请的订单
 
 const showPayDialog = ref(false)
-const payingOrder = ref({})
+const showPassWordDialog = ref (false)
+const payingOrder = ref(null)
+const selectedPayType = ref('')
+const showEvaluateDialog = ref(false)     // 是否显示评价弹窗
+const currentReviewOrder = ref(null)       // 当前评价的订单
 // 通过 getters 计算各 Tab 下的订单列表
 const allOrders = computed(() => store.getters.allOrders)
 const pendingPaymentOrders = computed(() => store.getters.pendingPaymentOrders)
@@ -75,6 +95,12 @@ const handlePay = (order) => {
   payingOrder.value = order
   showPayDialog.value = true
 }
+const handlePassWordSuccess = ({ orderId, payMethod }) => {
+  showPassWordDialog.value = false
+  handlePaySuccess({
+      orderId, payMethod: payMethod || selectedPayType.value
+  })
+}
 
 // 支付成功回调：停止计时器 + 更新订单状态为待收货
 const handlePaySuccess = ({ orderId, payMethod }) => {
@@ -84,7 +110,12 @@ const handlePaySuccess = ({ orderId, payMethod }) => {
     status: 'pending_receipt',
     extra: { payTime: new Date().toISOString(), payMethod }
   })
-  Toast.success('支付成功，商品将尽快发货')
+  const order = store.getters.allOrders.find( o => o.id === orderId)
+  if (order) {
+    const earnedPoints = Math.floor(parseFloat(order.totalAmount))//比例
+    store.commit("EARN_POINTS",{amount:earnedPoints,orderId})
+    Toast.success('支付成功，商品将尽快发货')
+  }
 }
 
 const handleCancelOrder = (order) => {
@@ -108,14 +139,20 @@ const handleConfirm = (order) => {
   Toast('已确认收货，欢迎评价')
 }
 
-// 评价完成：将订单状态改为"已完成"
+// 评价：打开评价弹窗
 const handleReview = (order) => {
+  currentReviewOrder.value = order
+  showEvaluateDialog.value = true
+}
+// 评价完成回调：将订单状态从"待评价"改为"已完成"
+const handleReviewSuccess = (order) => {
+  showEvaluateDialog.value = false
   store.dispatch('updateOrderStatus', {
     orderId: order.id,
     status: 'completed',
     extra: { reviewTime: new Date().toISOString() }
   })
-  Toast('感谢您的评价')
+  Toast.success('评价完成')
 }
 
 // 申请售后：仅允许已付款的订单申请售后

@@ -21,6 +21,7 @@ const routes = [
   { path: '/login', name: 'Login', component: Login },             // 登录页
   { path: '/register', name: 'Register', component: Register },
   { path: '/favorites', component: () => import('../views/Favorites.vue') },
+  { path: '/vip', component: () => import('../views/Vip.vue') },                              // 会员页
   { path: '/setting', component: Setting},
   // 以下路由采用懒加载（动态 import），按需加载以减小首屏体积
   { path: '/search', name: 'SearchResult', component: () => import('../views/SearchResult.vue') },  // 搜索结果
@@ -30,7 +31,9 @@ const routes = [
   { path: '/detail/:id', component: ()  => import('../views/BillDetail.vue') },                    //订单详情
   { path: '/refund/:id', component: () => import('../views/RefundDetail.vue') },                    // 售后详情
   { path: '/helpserver/', component: () => import('../views/HelpServer.vue') },               //联系在线客服
-  { path: "/questionanswer/", component: () => import('../views/QuestionAnswer.vue') },        //常见问题解答
+  { path: '/questionanswer/', component: () => import('../views/QuestionAnswer.vue') },        //常见问题解答
+  { path: '/coupon-exchange', component: () => import('../views/CouponExchange.vue')},
+  { path: '/points-detail', component: () => import('../views/PointsDetail.vue')}
 ]
 
 // 创建路由实例：使用 Hash 模式以兼容 GitHub Pages 等静态托管

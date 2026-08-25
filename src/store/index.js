@@ -52,14 +52,54 @@ const defaultCoupon = [
         desc: '全场通用'
     }
 ]
+const loadUserCoupons = () =>{
+    const data = localStorage.getItem('user-coupons')
+    return data ? JSON.parse(data) : []
+}
+const saveUserCoupons = (coupons) => {
+    localStorage.setItem('user-coupons',JSON.stringify(coupons))
+}
+const LEVELS = [
+    { name: '青铜会员', min: 0,    max: 500,      index: 0 },
+    { name: '白银会员', min: 500,  max: 1500,     index: 1 },
+    { name: '黄金会员', min: 1500, max: 3000,     index: 2 },
+    { name: '钻石会员', min: 3000, max: Infinity, index: 3 }
+]
+
+export const getLevelByPoints = (points) => {
+    const p = Number(points) || 0
+    return LEVELS.find(l => p >= l.min && p < l.max) || LEVELS[LEVELS.length - 1]
+}
+
+// 当前登录用户信息持久化：从 localStorage 读取
+const loadUser = () => {
+    const data = localStorage.getItem('user-info')
+    return data ? JSON.parse(data) : null
+}
+// 当前登录用户信息持久化：写入 localStorage
+const saveUser = (user) => {
+    if (user) {
+        localStorage.setItem('user-info', JSON.stringify(user))
+    } else {
+        localStorage.removeItem('user-info')
+    }
+}
+
+// 将 userInfo 的字段变更同步到 accountList 中对应用户（按 username 匹配）
+// 保证重新登录后积分、会员状态等不丢失
+const syncToAccountList = (state, name, partial) => {
+    if (!state.accountList || !name) return
+    const index = state.accountList.findIndex(a => a.username === name)
+    if (index >= 0) {
+        Object.assign(state.accountList[index], partial)
+        saveAccount(state.accountList)
+    }
+}
 
 // 浏览历史持久化
 const loadHistory = () => {
     const data = localStorage.getItem('browse-history')
     return data ? JSON.parse(data) : []
-}
-const saveHistory = (list) => {
-    localStorage.setItem('browse-history', JSON.stringify(list))
 }
 
 // 收藏持久化
@@ -96,6 +136,7 @@ const saveChosen = (index) => {
 export default createStore({
     mutations: {
         // ----------------- 购物车 mutations -----------------
+        // 合并优惠券在尾部
         // 添加商品到购物车：已存在则数量 +1，否则新建条目
         ADD_TO_CART(state, product) {
             const id = product.id
@@ -142,6 +183,7 @@ export default createStore({
             saveCart(state.cartList)
         },
 
+
         // ----------------- 订单 mutations -----------------
         // 新增订单（插到列表头部，最新订单显示在最前）
         ADD_ORDER(state, order) {
@@ -178,6 +220,17 @@ export default createStore({
                 state.refundRecords[index].status = status
                 Object.assign(state.refundRecords[index], extra)
                 state.refundRecords = [...state.refundRecords]
+            }
+        },
+        ADD_USER_COUPON(state,coupon){
+            state.userCoupons.push(coupon)
+            saveUserCoupons(state.userCoupons)
+        },
+        UPDATE_USER_COUPON(state,{couponId, updates}) {
+            const index = state.userCoupons.findIndex(c => c.id === couponId)
+            if (index !== -1) {
+                Object.assign(state.userCoupons[index], updates)
+                saveUserCoupons(state.userCoupons)
             }
         },
 
@@ -235,7 +288,11 @@ export default createStore({
                 state.accountList.push({
                     username: account.username,
                     password: account.password,
-                    avatar: account.avatar || ''
+                    avatar: account.avatar || '',
+                    isVip: false,
+                    levelPoints: 0,
+                    availablePoints: 0,
+                    pointsRecords: []
                 })
                 saveAccount(state.accountList)
             }
@@ -299,7 +356,84 @@ export default createStore({
             }
             delete  state.timers[orderId]
         },
-        REMOVE_EXPIRED(state){}
+        REMOVE_EXPIRED(state){},
+
+        // ----------------- 用户信息 mutations -----------------
+        // 设置/整体替换当前登录用户（登录、强制重置时使用）
+        SET_USER_INFO(state, user) {
+            // 兼容旧数据：只有 points 字段时迁移为 levelPoints/availablePoints
+            if (user && user.points !== undefined && user.levelPoints === undefined) {
+                user.levelPoints = user.points
+                user.availablePoints = user.points
+                delete user.points
+            }
+            // 兜底默认值，保证字段完整
+            const safeUser = {
+                isVip: false,
+                levelPoints: 0,
+                availablePoints: 0,
+                pointsRecords: [],
+                ...user
+            }
+            state.userInfo = safeUser
+            saveUser(safeUser)
+        },
+        // 局部更新用户信息（昵称、头像等），用新对象引用触发响应式
+        UPDATE_USER_INFO(state, partial) {
+            if (!state.userInfo) return
+            state.userInfo = { ...state.userInfo, ...partial }
+            saveUser(state.userInfo)
+            // 同步到 accountList，保证重新登录后状态不丢失
+            syncToAccountList(state, state.userInfo.name, partial)
+        },
+        // 清除当前登录用户（退出登录时使用）
+        CLEAR_USER_INFO(state) {
+            state.userInfo = null
+            saveUser(null)
+        },
+        // ----------------- 积分 mutations -----------------
+        ADD_USER_POINTS(state, points) {
+            if (!state.userInfo)
+                return
+            state.userInfo = {
+                ...state.userInfo,points: (state.userInfo.points || 0) + points
+            }
+            saveUser(state.userInfo)
+            // 同步积分到 accountList，保证重新登录后积分不丢失
+            syncToAccountList(state, state.userInfo.name, { points: state.userInfo.points })
+        },
+        EARN_POINTS(state, { amount,orderId }){
+            if (!state.userInfo)
+                return
+            state.userInfo = {
+                ...state.userInfo,
+                levelPoints:(state.userInfo.levelPoints || 0) + amount,
+                availablePoints:(state.userInfo.availablePoints || 0) + amount,
+                pointsRecords: [
+                    {id: Date.now(),type: 'earn',amount,source:'order',orderId,time:new Date().toString()},
+                    ...(state.userInfo.pointsRecords || [])
+                ]
+            }
+            saveUser(state.userInfo)
+            syncToAccountList(state,state.userInfo.name,{ ...state.userInfo })
+        },
+        SPEND_POINTS(state,{ amount, source, itemId, itemName }){
+            if (!state.userInfo)
+                return false
+            if((state.userInfo.availablePoints || 0) < amount)
+                return false
+            state.userInfo = {
+                ...state.userInfo,
+                availablePoints: state.userInfo.availablePoints - amount,
+                pointsRecords:[
+                    { id: Date.now(), type: 'spend', amount, source, itemId, itemName, time: new Date().toString() },
+                    ...(state.userInfo.pointsRecords || [])
+                ]
+            }
+            saveUser(state.userInfo)
+            syncToAccountList(state, state.userInfo.name,{...state.userInfo})
+            return true
+        }
     },
     state: {
         cartList: loadCart(),        // 购物车：以商品 id 为键的对象
@@ -309,7 +443,17 @@ export default createStore({
         browseHistory: loadHistory(),
         favoriteList: loadFavorites(),
         timers:{},
-        refundRecords: []            // 售后记录：仅在内存中维护
+        refundRecords: [],           // 售后记录：仅在内存中维护
+        userInfo: loadUser(),        // 当前登录用户信息（null 表示未登录）
+        userCoupons: loadUserCoupons(),// 用户已兑换的优惠券列表
+        couponList:[
+            { id:'c1', name:'满100减20',cost: 100, desc:'满100可用', threshold:100, discount: 20, type: 'fixed', valueDesc: '20.0', unitDesc: '元'},
+            { id:'c2', name:'满200减50',cost: 200, desc:'满200可用', threshold:200, discount: 50, type: 'fixed', valueDesc: '50.0', unitDesc: '元'},
+            { id:'c3', name:'满500减100',cost: 400, desc:'满400可用', threshold:500, discount: 100, type: 'fixed', valueDesc: '100.0', unitDesc: '元'},
+            { id:'c4', name:'整单九五折',cost: 80, desc:'满50可用', threshold:50, discountRate: 0.95, type: 'discount', valueDesc: '九五', unitDesc: '折'},
+            { id:'c5', name:'整单八八折',cost: 160, desc:'满150可用', threshold:150, discountRate: 0.88, type: 'discount', valueDesc: '八八', unitDesc: '折'},
+            { id:'c6', name:'整单七五折',cost: 340, desc:'满300可用', threshold:300, discountRate: 0.75, type: 'discount', valueDesc: '七五', unitDesc: '折'},
+        ]
     },
     actions: {
         // 添加商品到购物车
@@ -459,6 +603,47 @@ export default createStore({
                     dispatch('startOrderTimer',{ orderId })
                 }
             })
+        },
+        // 扣减可用积分（等级积分不减少），同时写入积分流水
+        spendPoints({ commit, state }, { amount, source, itemId, itemName }) {
+            return new Promise((resolve, reject) => {
+                if (!state.userInfo) {
+                    reject(new Error('用户未登录'))
+                    return
+                }
+                if ((state.userInfo.availablePoints || 0) < amount) {
+                    reject(new Error('积分不足'))
+                    return
+                }
+                commit('SPEND_POINTS', { amount, source, itemId, itemName })
+                resolve()
+            })
+        },
+        exchangeCoupons({commit,dispatch},{couponTemplate, cost, itemId, itemName }){
+            return new Promise((resolve,reject) => {
+                dispatch('spendPoints',{amount: cost,source:'coupon',itemId,itemName})
+                    .then(() => {
+                        const newCoupon = {
+                            id: Date.now().toString(),
+                            name: couponTemplate.name,
+                            type: couponTemplate.type || 'fixed',
+                            value: couponTemplate.value,                  // fixed 用：减免金额（分）
+                            discountRate: couponTemplate.discountRate,    // discount 用：折扣率
+                            threshold: couponTemplate.threshold,
+                            condition: couponTemplate.condition,
+                            available: 1,
+                            reason: '',
+                            startAt: Math.floor(Date.now()/1000),
+                            endAt: Math.floor(Date.now()/1000) + 30 * 86400,
+                            // 券左侧显示文本，直接取数据源预置字段
+                            valueDesc: couponTemplate.valueDesc || '',
+                            unitDesc: couponTemplate.unitDesc || '',
+                        }
+                        commit('ADD_USER_COUPON',newCoupon)
+                        resolve(newCoupon)
+                    })
+                    .catch(reject)
+            })
         }
     },
     getters: {
@@ -472,13 +657,13 @@ export default createStore({
             }, 0)
         },
         // 已勾选商品的总件数
-        //购物车
+        // 购物车
         checkedCount: (state) => {
             return Object.values(state.cartList).reduce((count, item) => {
                 return count + (item.checked ? item.count : 0)
             }, 0)
         },
-        //收藏
+        // 收藏
         checkedFavCount: (state) => {
             return state.favoriteList.filter(item => item.checked).length
         },
@@ -499,7 +684,7 @@ export default createStore({
         pendingRefundRecords: (state) => state.refundRecords.filter(r => r.status === 'pending'),
         isFavorite: (state) => (id) => state.favoriteList.some(p => p.id === id),
         favoriteCount: (state) => state.favoriteList.length,
-        // [计时器代码-暂时注释] getRemaining getter：state.timers 不在 store state 中，访问会报错
+        // 倒计时
         getRemaining:(state)=>(orderId)=>{
             return state.timers[orderId] ? state.timers[orderId].remaining : null
         }

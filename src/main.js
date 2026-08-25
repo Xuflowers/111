@@ -46,7 +46,7 @@ import {
     CouponList,
     CouponCell,
     PasswordInput,
-    NumberKeyboard
+    NumberKeyboard, Rate
 } from 'vant'
 
 // 创建 Vue 应用实例
@@ -59,7 +59,7 @@ app.use(Search).use(Swipe).use(SwipeItem).use(Grid).use(GridItem).use(Card).use(
     .use(NavBar).use(Icon).use(Empty).use(Tabs).use(Tab).use(Badge)
     .use(ActionBar).use(ActionBarIcon).use(ActionBarButton)
     .use(AddressList).use(RadioGroup).use(Radio).use(Uploader).use(Popup).use(Field).use(Switch).use(CouponList)
-    .use(CouponCell).use(PasswordInput).use(NumberKeyboard)
+    .use(CouponCell).use(PasswordInput).use(NumberKeyboard).use(Rate)
 
 // 注册 Vuex 状态管理、Vue Router，并将应用挂载到 #app 节点
 app.use(store).use(router).mount('#app')

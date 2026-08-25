@@ -25,7 +25,7 @@
             plain
             @click="toggleMode"
         >
-          {{ isQuickMode ? '切换到输入' : '快捷回复' }}
+          {{ isQuickMode ? '切换到输入' : '快捷输入' }}
         </van-button>
       </div>
 

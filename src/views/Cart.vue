@@ -17,6 +17,7 @@
             :price="(item.price / 100).toFixed(2)"
             :title="item.name"
             :desc="item.desc"
+            :type="item.type"
             :thumb="getCartItemImage(item)"
             class="cart-card"
         >
@@ -51,12 +52,18 @@
         :button-text="`去结算(${checkedCount})`"
         @submit="onSubmit"
     >
-      <span v-if="discountPrice > 0" class="discount-tip">已优惠 ¥{{ (discountPrice / 100).toFixed(2) }}</span>
-      <van-coupon-cell
-          :coupons="coupons"
-          :chosen-coupon="chosenCoupon"
+      <van-cell
+          title="优惠券"
+          is-link
+          class="coupon-cell"
           @click="showList = true"
-      />
+      >
+        <template #value>
+          <span v-if="discountPrice > 0" class="coupon-value">已优惠 ¥{{ (discountPrice / 100).toFixed(2) }}</span>
+          <span v-else-if="coupons.length > 0" class="coupon-available">{{ coupons.length }}张可用</span>
+          <span v-else class="coupon-empty">暂无可用券</span>
+        </template>
+      </van-cell>
       <van-checkbox :model-value="allChecked" @click="toggleAll">全选</van-checkbox>
     </van-submit-bar>
     <van-popup
@@ -69,8 +76,7 @@
           :coupons="coupons"
           :chosen-coupon="chosenCoupon"
           :disabled-coupons="disabledCoupons"
-          @change="onCouponChange"
-          @exchange="onExchange"/>
+          @change="onCouponChange"/>
     </van-popup>
     <AppTabBar />
   </div>
@@ -80,7 +86,7 @@
 import { computed, ref, watch, onMounted} from 'vue'
 import { useStore } from 'vuex'
 import { useRouter } from 'vue-router'
-import { Dialog, Toast, CouponCell, CouponList} from 'vant'
+import { Dialog, Toast, CouponList} from 'vant'
 import AppTabBar from '@/components/AppTabBar.vue'
 
 const store = useStore()
@@ -142,6 +148,7 @@ const handleDelete = (id) => {
   }).catch(() => {})
 }
 
+const userCoupons = computed(() => store.state.userCoupons)
     // ---------- 优惠券基础数据 ----------
     // 默认优惠券模板
     const defaultCoupon = {
@@ -180,10 +187,18 @@ const handleDelete = (id) => {
       return [defaultCoupon]
     }
 
-    const coupons = ref(loadCoupons())
+    const coupons = ref([])
     const disabledCoupons = ref([])
     const showList = ref(false)
     const chosenCoupon = ref(loadChosenCoupon())
+
+
+    // 根据用户券包和时间过滤，初始化可用/不可用列表
+    const initCouponLists = () => {
+      const now = Math.floor(Date.now() / 1000)
+      coupons.value = userCoupons.value.filter(c => c.available === 1 && c.startAt <= now && c.endAt >= now)
+      disabledCoupons.value = userCoupons.value.filter(c => c.available === 0 || c.startAt > now || c.endAt < now)
+    }
 
     // 根据当前购物车金额自动分类优惠券到可用/不可用列表
     const classifyCoupons = () => {
@@ -213,7 +228,6 @@ const handleDelete = (id) => {
 
       coupons.value = availableList
       disabledCoupons.value = disabledList
-
       // 根据名称找回选中券的新索引
       if (selectedName) {
         const newIndex = availableList.findIndex(c => c.name === selectedName)
@@ -236,16 +250,30 @@ const handleDelete = (id) => {
       saveChosenCoupon(index);
       showList.value = false;
     };
-
+const calcDiscountByType = (coupon, orderAmount) => {
+  if (!coupon || orderAmount <= 0) return 0
+  const type = coupon.type || 'fixed'
+  switch (type) {
+    // 满减：满足门槛后减固定金额，且不超过订单金额
+    case 'fixed':
+      if (orderAmount < coupon.threshold) return 0
+      return Math.min(coupon.value || 0, orderAmount)
+    // 折扣：优惠 = 订单金额 × (1 - 折扣率)，向下取整到分
+    case 'discount':
+      if (orderAmount < coupon.threshold) return 0
+      return Math.floor(orderAmount * (1 - (coupon.discountRate || 0)))
+    default:
+      return 0
+  }
+}
     // 当前选中的优惠券对象
     const selectedCoupon = computed(() => {
       return chosenCoupon.value >= 0 ? coupons.value[chosenCoupon.value] : null
     })
-    // 优惠金额
-    const discountPrice = computed(() => {
-      if (!selectedCoupon.value) return 0
-      return Math.min(selectedCoupon.value.value, totalPrice.value)
-    })
+    // 优惠金额（按选中券类型分别计算）
+    const discountPrice = computed(() =>
+      calcDiscountByType(selectedCoupon.value, totalPrice.value)
+    )
     // 实付金额 = 原价 - 优惠（最低为 0）
     const finalPrice = computed(() => Math.max(0, totalPrice.value - discountPrice.value))
 
@@ -254,6 +282,12 @@ const handleDelete = (id) => {
       classifyCoupons()
     })
 
+    // 监听用户券包变化（积分兑换后新增券），重新初始化并分类
+    watch(userCoupons, () => {
+      initCouponLists()
+      classifyCoupons()
+    }, { deep: true })
+
     // 监听优惠券列表变化，自动保存到 localStorage
     watch(coupons, () => {
       localStorage.setItem('coupon-list', JSON.stringify(coupons.value))
@@ -261,27 +295,10 @@ const handleDelete = (id) => {
 
     // 组件挂载时初始化分类（确保刷新后选中状态正确）
     onMounted(() => {
+      initCouponLists()
       classifyCoupons()
     })
 
-    const onExchange = (code) => {
-      const newCoupon = {
-        available: 1,
-        threshold: 5000,
-        condition: '满50元可用\n最多优惠20元',
-        reason: '',
-        value: 2000,
-        name: '兑换券',
-        startAt: Math.floor(Date.now() / 1000),
-        endAt: Math.floor(Date.now() / 1000) + 86400 * 30,
-        valueDesc: '20.0',
-        unitDesc: '元'
-      }
-      coupons.value.push(newCoupon)
-      // 兑换后立即根据当前金额分类
-      classifyCoupons()
-      Toast.success('兑换成功')
-    }
     const onSubmit = async () => {
       if (checkedCount.value === 0) {
         Toast('请选择要结算的商品')
@@ -365,11 +382,22 @@ const handleDelete = (id) => {
   flex-wrap: wrap !important;
 }
 
-.discount-tip {
-  color: #ee0a24;
-  font-size: 12px;
+/* 优惠券栏：根据选中状态显示实际优惠金额 / 可用券数 / 空状态 */
+.coupon-cell {
   width: 100%;
-  padding: 4px 16px 0;
+}
+.coupon-value {
+  color: #ee0a24;
+  font-size: 13px;
+  font-weight: 500;
+}
+.coupon-available {
+  color: #323233;
+  font-size: 13px;
+}
+.coupon-empty {
+  color: #969799;
+  font-size: 13px;
 }
 
 </style>
