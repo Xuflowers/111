@@ -53,6 +53,7 @@ const handleLogin = () => {
     localStorage.setItem('user-token', 'fake-token')
     store.commit('SET_USER_INFO', {
       name: user.username,
+      nickname: user.nickname || '用户123',
       avatar: user.avatar,
       points: user.points ?? 0,
       isVip: user.isVip ?? false,

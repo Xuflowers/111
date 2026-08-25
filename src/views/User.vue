@@ -14,7 +14,7 @@
           <div class="center">
             <div class="username"
                  @click="showsetUserName=true"
-            >你好，{{ userInfo.name }}</div>
+            >你好，{{ userInfo.nickname || '用户123' }}</div>
             <span class="vip-point">积分：{{userInfo?.availablePoints || 0}}</span>
           </div>
         </div>
@@ -146,7 +146,7 @@ const setUserName = () =>{
     Toast.fail('请输入正确的昵称')
     return
   }
-  store.commit('UPDATE_USER_INFO', { name: newUserName.value.trim() })
+  store.commit('UPDATE_USER_INFO', { nickname: newUserName.value.trim() })
   Toast.success('修改成功')
   newUserName.value=''
   showsetUserName.value=false

@@ -67,7 +67,8 @@ const handleRegister = () => {
   // 添加账户到 store
   store.commit('ADD_TO_ACCOUNT', {
     username: form.username,
-    password: form.password
+    password: form.password,
+    nickname: '用户123'
   })
 
   Toast.success('注册成功，请登录')

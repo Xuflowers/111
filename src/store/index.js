@@ -370,6 +370,7 @@ export default createStore({
             // 兜底默认值，保证字段完整
             const safeUser = {
                 isVip: false,
+                nickname: '用户123',
                 levelPoints: 0,
                 availablePoints: 0,
                 pointsRecords: [],
