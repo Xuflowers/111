@@ -204,11 +204,6 @@ export default createStore({
                 saveOrders(state.orderList)
             }
         },
-        // 删除订单（取消订单时使用）
-        REMOVE_ORDER(state, orderId) {
-            state.orderList = state.orderList.filter(o => o.id !== orderId)
-            saveOrders(state.orderList)
-        },
         // 新建售后记录
         CREATE_REFUND_RECORD(state, record) {
             state.refundRecords.unshift(record)
@@ -516,9 +511,6 @@ export default createStore({
                 commit('REMOVE_FROM_CART', item.id)
             }
             return newOrder
-        },
-        removeOrder({ commit }, orderId) {
-            commit('REMOVE_ORDER', orderId)
         },
         // 更新订单状态
         updateOrderStatus({ commit }, payload) {

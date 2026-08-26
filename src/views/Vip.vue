@@ -7,7 +7,7 @@
           <div class="vip-badge">VIP：{{ levelName }}</div>
           <!-- 未注册会员：显示开通按钮 -->
           <div v-if="!isVipRegistered" class="vip-register">
-            <p class="register-tip">您还不是会员，开通即可享受专属特权</p>
+            <p class="register-tip">您还不是会员，开通即刻享受专属特权</p>
             <van-button type="primary" round block @click="registerVip">开通会员</van-button>
           </div>
           <!-- 已注册会员：显示等级进度条 -->

@@ -123,7 +123,12 @@ const handleCancelOrder = (order) => {
     message: '确定要取消该订单吗？'
   }).then(() => {
     store.dispatch('stopOrderTimer',order.id)
-    store.dispatch('removeOrder', order.id)
+    // 取消订单改为置状态为 cancelled（而非物理删除），以便在"全部订单"中保留并显示
+    store.dispatch('updateOrderStatus', {
+      orderId: order.id,
+      status: 'cancelled',
+      extra: { cancelTime: new Date().toISOString() }
+    })
     Toast.success('订单已取消')
   }).catch(() => {})
 }

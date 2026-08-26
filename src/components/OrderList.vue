@@ -46,7 +46,9 @@
                 </div>
               </div>
             </div>
+            <Transition name="hint-fade" mode="out-in">
             <div v-if="!expandedOrders.has(order.id) && order.products.length > 1" class="collapse-mask"></div>
+            </Transition>
             <span class="expand-hint" @click.stop="toggleOrder(order.id)">
               <Transition name="hint-fade" mode="out-in">
                 <span :key="expandedOrders.has(order.id) ? 'collapse' : 'expand'">
